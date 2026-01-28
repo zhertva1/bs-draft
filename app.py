@@ -4,9 +4,14 @@ import time
 import threading
 from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO, emit
+from gevent import monkey
 
+# Применяем monkey patch для gevent
+monkey.patch_all()
+
+# Инициализация Flask
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
 
 # Получаем список бравлеров из папки
 def get_brawlers_list():
@@ -19,10 +24,11 @@ def get_brawlers_list():
                 name = os.path.splitext(filename)[0]
                 brawlers.append(name)
     
-    return sorted(brawlers)
+    print(f"✅ Найдено бравлеров: {len(brawlers)}")
+    return sorted(brawlers, key=lambda x: x.lower())
 
 BRWLERS = get_brawlers_list()
-print(f"✅ Найдено бравлеров: {len(BRWLERS)}")
+print(f"📋 Первые 5 бравлеров: {BRWLERS[:5]}...")
 
 # Состояние драфта
 class DraftState:
@@ -37,7 +43,7 @@ class DraftState:
         self.all_selected = []
         self.phase = "waiting"  # waiting, ban_blue, ban_red, pick, finished
         self.current_turn = None
-        self.picking_team = None  # Какая команда начинает пики
+        self.picking_team = None
         self.pick_order = []
         self.current_pick_index = 0
         self.last_action_time = time.time()
@@ -53,7 +59,7 @@ class DraftState:
             self.pick_order = ["red", "blue", "blue", "red", "red", "blue"]
     
     def get_state_for_team(self, team):
-        """Возвращает состояние для конкретной команды (скрывая баны противника)"""
+        """Возвращает состояние для конкретной команды"""
         with self.lock:
             state = {
                 "blue_bans": self.blue_bans.copy(),
@@ -66,8 +72,6 @@ class DraftState:
                 "picking_team": self.picking_team,
                 "pick_order": self.pick_order.copy(),
                 "current_pick_index": self.current_pick_index,
-                "total_bans": len(self.blue_bans) + len(self.red_bans),
-                "total_picks": len(self.blue_picks) + len(self.red_picks),
             }
             
             # Скрываем баны противника в фазе банов
@@ -98,9 +102,7 @@ timer_thread.start()
 
 def broadcast_state():
     """Отправляет состояние всем подключенным клиентам"""
-    for team in ["blue", "red", "spectator"]:
-        state = draft_state.get_state_for_team(team)
-        socketio.emit("update_draft", state, room=team)
+    socketio.emit("update_draft", draft_state.get_state_for_team("spectator"))
 
 @app.route('/')
 def index():
@@ -117,17 +119,13 @@ def health():
 @socketio.on('connect')
 def handle_connect():
     print('🔌 Новое подключение')
+    emit('brawlers_list', BRWLERS)
+    emit('update_draft', draft_state.get_state_for_team("spectator"))
 
 @socketio.on('join')
 def handle_join(data):
     team = data.get('team', 'spectator')
     print(f'👤 Игрок присоединился к команде: {team}')
-    
-    # Привязываем socket к комнате команды
-    socketio.emit('set_team', {'team': team})
-    
-    # Отправляем список бравлеров
-    emit('brawlers_list', BRWLERS)
     
     # Отправляем состояние для этой команды
     state = draft_state.get_state_for_team(team)
@@ -148,20 +146,15 @@ def handle_select_brawler(data):
     brawler = data.get('brawler', '').strip()
     team = data.get('team', '')
     
-    print(f"🎯 Попытка выбора: {brawler} командой {team}")
-    
     if not brawler or not team or team not in ['blue', 'red']:
-        print(f"❌ Неверные данные")
         return
     
     if brawler not in BRWLERS:
-        print(f"❌ Бравлер не найден: {brawler}")
         return
     
     with draft_state.lock:
         # Проверяем, можно ли выбрать этого бравлера
         if brawler in draft_state.all_selected:
-            print(f"❌ Бравлер уже выбран: {brawler}")
             return
         
         # Фаза банов
@@ -169,7 +162,6 @@ def handle_select_brawler(data):
             # Проверяем, чей сейчас ход
             expected_team = draft_state.current_turn
             if team != expected_team:
-                print(f"❌ Не ваша очередь. Ожидается: {expected_team}")
                 return
             
             # Добавляем бан
@@ -177,13 +169,11 @@ def handle_select_brawler(data):
                 if len(draft_state.blue_bans) < 3:
                     draft_state.blue_bans.append(brawler)
                 else:
-                    print("❌ Синяя команда уже сделала все баны")
                     return
             else:  # red
                 if len(draft_state.red_bans) < 3:
                     draft_state.red_bans.append(brawler)
                 else:
-                    print("❌ Красная команда уже сделала все баны")
                     return
             
             draft_state.all_selected.append(brawler)
@@ -215,7 +205,6 @@ def handle_select_brawler(data):
             # Проверяем, чей сейчас ход
             expected_team = draft_state.current_turn
             if team != expected_team:
-                print(f"❌ Не ваша очередь. Ожидается: {expected_team}")
                 return
             
             # Добавляем пик
@@ -223,13 +212,11 @@ def handle_select_brawler(data):
                 if len(draft_state.blue_picks) < 3:
                     draft_state.blue_picks.append(brawler)
                 else:
-                    print("❌ Синяя команда уже сделала все пики")
                     return
             else:  # red
                 if len(draft_state.red_picks) < 3:
                     draft_state.red_picks.append(brawler)
                 else:
-                    print("❌ Красная команда уже сделала все пики")
                     return
             
             draft_state.all_selected.append(brawler)
@@ -246,9 +233,7 @@ def handle_select_brawler(data):
                 draft_state.current_turn = draft_state.pick_order[draft_state.current_pick_index]
             else:
                 draft_state.phase = "finished"
-                print("🏁 Драфт завершен!")
     
-    print(f"✅ Успешный выбор: {brawler} командой {team}")
     broadcast_state()
 
 @socketio.on('reset_draft')
@@ -262,4 +247,4 @@ def handle_reset_draft():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"🚀 Сервер запущен на порту {port}")
-    socketio.run(app, host='0.0.0.0', port=port)
+    socketio.run(app, host='0.0.0.0', port=port, debug=False)
