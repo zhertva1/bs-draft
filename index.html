@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Draft Debug</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; }
+        #team-selector { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .sel-btn { padding: 20px; margin: 10px; font-size: 20px; cursor: pointer; border: none; border-radius: 5px; color: white; }
+        .brawler-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; max-width: 600px; margin: auto; }
+        .brawler { padding: 15px; background: #333; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .disabled { opacity: 0.2; cursor: not-allowed; }
+        .active { border: 2px solid gold; box-shadow: 0 0 15px gold; }
+        #reset-btn { position: fixed; bottom: 10px; right: 10px; padding: 10px; background: orange; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="team-selector">
+        <h1>ВЫБЕРИТЕ КОМАНДУ</h1>
+        <button class="sel-btn" style="background:#3498db" onclick="setTeam('blue')">СИНИЕ</button>
+        <button class="sel-btn" style="background:#e74c3c" onclick="setTeam('red')">КРАСНЫЕ</button>
+    </div>
+
+    <h2 id="status">Подключение...</h2>
+    <div style="display:flex; justify-content: space-around;">
+        <div id="blue-ui"><h3>Blue Picks</h3><div id="bp"></div></div>
+        <div class="brawler-grid" id="grid"></div>
+        <div id="red-ui"><h3>Red Picks</h3><div id="rp"></div></div>
+    </div>
+
+    <button id="reset-btn" onclick="resetDraft()">СБРОС ДРАФТА</button>
+
+    <script>
+        const socket = io();
+        let myTeam = null;
+
+        const brawlers = ["Shelly", "Colt", "Mortis", "Crow", "Leon", "Spike", "Piper", "Brock", "Nita", "Bull", "Bo", "Stu", "El Primo", "Poco", "Rosa", "Rico", "Darryl", "Penny", "Carl", "Jacky"];
+
+        function setTeam(team) {
+            myTeam = team;
+            document.getElementById('team-selector').style.display = 'none';
+            console.log("Выбрана команда:", myTeam);
+        }
+
+        function resetDraft() {
+            socket.emit('reset_draft');
+        }
+
+        const grid = document.getElementById('grid');
+        brawlers.forEach(b => {
+            const d = document.createElement('div');
+            d.className = 'brawler';
+            d.id = 'br-' + b;
+            d.innerText = b;
+            d.onclick = () => {
+                console.log("Клик по:", b);
+                if(myTeam) socket.emit('select_brawler', {brawler: b, team: myTeam});
+            };
+            grid.appendChild(d);
+        });
+
+        socket.on('connect', () => {
+            document.getElementById('status').innerText = "Подключено. Выберите персонажей";
+            console.log("Socket подключен!");
+        });
+
+        socket.on('my_temp_bans', (bans) => {
+            console.log("Мои временные баны:", bans);
+            document.getElementById('status').innerText = "Баны: " + bans.join(", ");
+        });
+
+        socket.on('update_draft', (data) => {
+            console.log("Данные обновлены:", data);
+            
+            // Если драфт сброшен — возвращаем выбор команды (опционально)
+            if (data.all_selected.length === 0 && data.phase === "ban") {
+                // Можно раскомментировать, если нужно выбирать команду заново при сбросе:
+                // document.getElementById('team-selector').style.display = 'flex';
+            }
+
+            if (data.phase === "pick") {
+                document.getElementById('status').innerText = "ХОД: " + data.picking_order[data.turn_index];
+            } else if (data.phase === "finished") {
+                document.getElementById('status').innerText = "ФИНИШ";
+            }
+
+            document.getElementById('bp').innerText = data.blue_picks.join("\n");
+            document.getElementById('rp').innerText = data.red_picks.join("\n");
+
+            data.all_selected.forEach(b => {
+                const el = document.getElementById('br-' + b);
+                if(el) el.classList.add('disabled');
+            });
+        });
+    </script>
+</body>
+</html>
