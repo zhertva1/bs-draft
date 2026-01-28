@@ -5,16 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brawl Stars Draft</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0a0a14 0%, #1a1a2a 100%);
-            color: white;
-            font-family: 'Arial', sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0f0f0f; 
+            color: white; 
+            font-family: Arial, sans-serif;
             min-height: 100vh;
             padding: 20px;
         }
@@ -24,179 +19,93 @@
             margin: 0 auto;
         }
         
-        /* Шапка */
-        .header {
-            background: linear-gradient(90deg, #1a1a1a 0%, #2a2a3a 100%);
-            padding: 20px;
-            text-align: center;
-            font-size: 28px;
+        .header { 
+            background: #1a1a1a; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 24px; 
             font-weight: bold;
-            border-radius: 15px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            border: 3px solid #3498db;
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+            border: 2px solid #333;
             position: relative;
-            overflow: hidden;
-        }
-        
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3498db, #e74c3c);
-        }
-        
-        .team-indicator {
-            position: absolute;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .team-blue-indicator {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            border: 2px solid #3498db;
-        }
-        
-        .team-red-indicator {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border: 2px solid #e74c3c;
         }
         
         .timer {
             position: absolute;
+            right: 20px;
             top: 50%;
-            left: 20px;
             transform: translateY(-50%);
-            font-size: 16px;
             color: #f39c12;
-            font-weight: bold;
+            font-size: 16px;
         }
         
-        /* Карта и режим */
-        .map-section {
-            background: rgba(26, 26, 42, 0.8);
-            border-radius: 15px;
+        /* Меню выбора карты (для админа) */
+        .map-selector {
+            background: #222;
             padding: 20px;
-            margin-bottom: 20px;
-            border: 2px solid #444;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            min-height: 300px;
-        }
-        
-        .map-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .map-name {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2ecc71;
-            text-align: center;
-            text-transform: uppercase;
-        }
-        
-        .map-image {
-            width: 400px;
-            height: 225px;
             border-radius: 10px;
-            overflow: hidden;
-            border: 3px solid #444;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-        
-        .map-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .mode-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .mode-name {
-            font-size: 20px;
-            font-weight: bold;
-            color: #3498db;
-            text-transform: uppercase;
-        }
-        
-        .mode-icon {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 3px solid #3498db;
-            background: rgba(52, 152, 219, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .mode-icon img {
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-        }
-        
-        /* Панель админа */
-        .admin-panel {
-            background: rgba(26, 26, 42, 0.9);
-            border-radius: 15px;
-            padding: 20px;
             margin-bottom: 20px;
-            border: 3px solid #f39c12;
+            border: 2px solid #f39c12;
             display: none;
         }
         
-        .admin-panel.active {
+        .map-selector.active {
             display: block;
         }
         
-        .admin-title {
+        .map-selector-title {
             color: #f39c12;
-            font-size: 22px;
-            font-weight: bold;
+            font-size: 20px;
             margin-bottom: 15px;
             text-align: center;
+        }
+        
+        .modes-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .mode-tab {
+            padding: 10px 20px;
+            background: #333;
+            border: 2px solid #444;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        
+        .mode-tab:hover {
+            background: #444;
+        }
+        
+        .mode-tab.active {
+            background: #3498db;
+            border-color: #3498db;
         }
         
         .maps-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
-            margin-bottom: 20px;
             max-height: 300px;
             overflow-y: auto;
             padding: 10px;
+            background: #1a1a1a;
+            border-radius: 8px;
         }
         
         .map-option {
-            background: rgba(40, 40, 60, 0.8);
-            border-radius: 10px;
-            padding: 10px;
+            background: #333;
+            border-radius: 8px;
+            overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: 0.3s;
             border: 2px solid transparent;
-            text-align: center;
         }
         
         .map-option:hover {
@@ -212,10 +121,8 @@
         
         .map-option-image {
             width: 100%;
-            height: 100px;
-            border-radius: 8px;
+            height: 120px;
             overflow: hidden;
-            margin-bottom: 8px;
         }
         
         .map-option-image img {
@@ -225,44 +132,78 @@
         }
         
         .map-option-name {
-            font-size: 12px;
-            font-weight: bold;
-            color: #fff;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-        
-        .map-option-mode {
-            font-size: 10px;
-            color: #3498db;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
             font-weight: bold;
         }
         
-        .admin-controls {
+        /* Карта и режим */
+        .map-display {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
             display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 40px;
+            min-height: 250px;
         }
         
-        .admin-btn {
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
+        .map-container {
+            text-align: center;
+        }
+        
+        .map-name {
+            font-size: 24px;
             font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
+            color: #2ecc71;
+            margin-bottom: 15px;
         }
         
-        .admin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        .map-image {
+            width: 400px;
+            height: 225px;
+            background: #333;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 3px solid #444;
         }
         
-        .admin-btn.reset {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        .map-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .mode-container {
+            text-align: center;
+        }
+        
+        .mode-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .mode-icon {
+            width: 120px;
+            height: 120px;
+            background: #333;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mode-icon img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
         }
         
         /* Основной контент драфта */
@@ -274,69 +215,56 @@
         
         .team-side {
             width: 350px;
-            background: rgba(26, 26, 42, 0.8);
-            padding: 20px;
-            border-radius: 15px;
+            background: #222; 
+            padding: 20px; 
+            border-radius: 10px;
             border: 3px solid;
             display: flex;
             flex-direction: column;
         }
         
-        .team-blue {
-            border-color: #3498db;
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
-        }
-        
-        .team-red {
-            border-color: #e74c3c;
-            box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
-        }
+        .team-blue { border-color: #3498db; }
+        .team-red { border-color: #e74c3c; }
         
         .team-header {
             text-align: center;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             padding-bottom: 10px;
             margin-bottom: 20px;
             border-bottom: 2px solid;
         }
         
-        .team-blue .team-header {
-            color: #3498db;
-            border-color: #3498db;
-        }
+        .team-blue .team-header { color: #3498db; border-color: #3498db; }
+        .team-red .team-header { color: #e74c3c; border-color: #e74c3c; }
         
-        .team-red .team-header {
-            color: #e74c3c;
-            border-color: #e74c3c;
-        }
-        
-        .ready-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        .ready-section {
             margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .ready-status {
             padding: 10px;
             border-radius: 8px;
             font-weight: bold;
+            margin-bottom: 10px;
         }
         
-        .ready-indicator.ready {
+        .ready-status.ready {
             background: rgba(46, 204, 113, 0.2);
             color: #2ecc71;
             border: 2px solid #2ecc71;
         }
         
-        .ready-indicator.not-ready {
+        .ready-status.not-ready {
             background: rgba(231, 76, 60, 0.2);
             color: #e74c3c;
             border: 2px solid #e74c3c;
         }
         
         .ready-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            padding: 12px 24px;
+            background: #2ecc71;
             color: white;
             border: none;
             border-radius: 8px;
@@ -345,7 +273,6 @@
             cursor: pointer;
             transition: 0.3s;
             width: 100%;
-            margin-bottom: 20px;
         }
         
         .ready-btn:hover {
@@ -354,31 +281,20 @@
         }
         
         .ready-btn.unready {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
-        
-        .section {
-            margin-bottom: 25px;
-        }
-        
-        .section-title {
-            font-size: 16px;
-            color: #ccc;
-            margin-bottom: 15px;
-            text-align: center;
+            background: #e74c3c;
         }
         
         .bans-row {
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
         
         .ban-slot {
             width: 80px;
             height: 80px;
-            background: rgba(40, 40, 60, 0.8);
+            background: #444;
             border: 3px dashed #666;
             border-radius: 8px;
             display: flex;
@@ -387,7 +303,6 @@
             font-size: 24px;
             color: #666;
             font-weight: bold;
-            transition: all 0.3s;
         }
         
         .ban-slot img {
@@ -397,11 +312,7 @@
             filter: grayscale(1) brightness(0.6);
         }
         
-        .ban-slot.hidden {
-            background: #333;
-        }
-        
-        .picks-column {
+        .pick-column {
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -411,12 +322,11 @@
         .pick-slot {
             width: 200px;
             height: 200px;
-            background: rgba(40, 40, 60, 0.8);
+            background: #444;
             border: 4px solid #666;
             border-radius: 10px;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s;
         }
         
         .pick-slot.active {
@@ -441,7 +351,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            background: rgba(0,0,0,0.8);
             padding: 10px;
             text-align: center;
             font-size: 14px;
@@ -452,17 +362,16 @@
         /* Панель бравлеров */
         .brawlers-panel {
             flex: 1;
-            background: rgba(26, 26, 42, 0.8);
+            background: #222;
             padding: 20px;
-            border-radius: 15px;
-            border: 2px solid #444;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
         }
         
         .search-box {
             padding: 15px;
-            background: rgba(40, 40, 60, 0.8);
+            background: #333;
             border: 2px solid #444;
             color: white;
             font-size: 16px;
@@ -477,7 +386,7 @@
             gap: 10px;
             overflow-y: auto;
             padding: 10px;
-            background: rgba(20, 20, 30, 0.5);
+            background: #1a1a1a;
             border-radius: 8px;
             max-height: 400px;
         }
@@ -485,57 +394,54 @@
         .brawler-card {
             width: 100px;
             height: 100px;
-            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(231, 76, 60, 0.1));
-            border-radius: 10px;
+            background: #333;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             border: 2px solid transparent;
-            transition: all 0.3s;
+            transition: 0.3s;
         }
         
         .brawler-card:hover {
-            transform: translateY(-5px);
+            transform: scale(1.05);
             border-color: #3498db;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
         
         .brawler-card.disabled {
             opacity: 0.3;
             filter: grayscale(1);
             cursor: not-allowed;
-            transform: none !important;
         }
         
         .brawler-card img {
             width: 100%;
             height: 70px;
             object-fit: contain;
-            padding: 8px;
+            padding: 5px;
         }
         
         .brawler-name {
             height: 30px;
-            background: rgba(0, 0, 0, 0.8);
+            background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 10px;
             text-transform: uppercase;
             font-weight: bold;
-            letter-spacing: 0.5px;
         }
         
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
+        .admin-controls {
             margin-top: 20px;
+            text-align: center;
         }
         
-        .btn {
+        .admin-btn {
             padding: 12px 24px;
+            background: #e74c3c;
+            color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -544,59 +450,34 @@
             transition: 0.3s;
         }
         
-        .btn:hover:not(:disabled) {
+        .admin-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
         }
         
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        /* Уведомления */
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
+            background: #3498db;
             color: white;
             padding: 15px 25px;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: bold;
             z-index: 1000;
             animation: slideIn 0.5s, fadeOut 0.5s 2.7s forwards;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             max-width: 300px;
         }
         
-        .notification.error {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
-        
-        .notification.success {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-        }
-        
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         @keyframes fadeOut {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
+            to { opacity: 0; visibility: hidden; }
         }
         
-        /* Адаптивность */
         @media (max-width: 1200px) {
             .draft-container {
                 flex-direction: column;
@@ -608,24 +489,13 @@
                 justify-content: space-around;
             }
             
-            .section {
-                width: 45%;
+            .ready-section, .bans-row, .pick-column {
+                width: 30%;
             }
         }
         
         @media (max-width: 768px) {
-            .header {
-                font-size: 20px;
-                padding: 15px;
-            }
-            
-            .team-indicator, .timer {
-                position: static;
-                transform: none;
-                margin-top: 10px;
-            }
-            
-            .map-section {
+            .map-display {
                 flex-direction: column;
                 gap: 20px;
             }
@@ -639,26 +509,8 @@
                 flex-direction: column;
             }
             
-            .section {
+            .ready-section, .bans-row, .pick-column {
                 width: 100%;
-            }
-            
-            .brawlers-grid {
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            }
-            
-            .brawler-card {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .brawler-card img {
-                height: 55px;
-            }
-            
-            .brawler-name {
-                height: 25px;
-                font-size: 9px;
             }
         }
     </style>
@@ -666,33 +518,41 @@
 <body>
     <div class="container">
         <!-- Шапка -->
-        <div class="header" id="header">
+        <div class="header">
             <div id="status">Brawl Stars Draft</div>
-            <div id="timer" class="timer"></div>
-            <div id="team-indicator" class="team-indicator"></div>
+            <div class="timer" id="timer"></div>
         </div>
         
-        <!-- Панель админа -->
-        <div id="admin-panel" class="admin-panel">
-            <div class="admin-title">ПАНЕЛЬ АДМИНИСТРАТОРА</div>
-            <div id="maps-container" class="maps-grid"></div>
+        <!-- Меню выбора карты (только для админа) -->
+        <div id="map-selector" class="map-selector">
+            <div class="map-selector-title">ВЫБОР КАРТЫ</div>
+            
+            <div class="modes-tabs" id="modes-tabs">
+                <!-- Вкладки режимов будут добавлены здесь -->
+            </div>
+            
+            <div class="maps-grid" id="maps-grid">
+                <!-- Карты будут добавлены здесь -->
+            </div>
+            
             <div class="admin-controls">
                 <button class="admin-btn" onclick="resetDraft()">СБРОСИТЬ ДРАФТ</button>
             </div>
         </div>
         
-        <!-- Карта и режим -->
-        <div id="map-section" class="map-section">
+        <!-- Отображение выбранной карты -->
+        <div class="map-display">
             <div class="map-container">
-                <div id="map-name" class="map-name">Выберите карту</div>
+                <div id="map-name" class="map-name">Ожидание выбора карты</div>
                 <div class="map-image">
                     <img id="map-image" src="" alt="Выбранная карта">
                 </div>
             </div>
+            
             <div class="mode-container">
                 <div id="mode-name" class="mode-name">Режим</div>
                 <div class="mode-icon">
-                    <img id="mode-icon" src="" alt="Режим">
+                    <img id="mode-icon" src="" alt="Иконка режима">
                 </div>
             </div>
         </div>
@@ -700,70 +560,54 @@
         <!-- Основной контент драфта -->
         <div class="draft-container">
             <!-- Синяя команда -->
-            <div id="blue-side" class="team-side team-blue">
+            <div class="team-side team-blue">
                 <div class="team-header">СИНЯЯ КОМАНДА</div>
                 
-                <div id="blue-ready-indicator" class="ready-indicator not-ready">
-                    <span>Не готов</span>
+                <div class="ready-section">
+                    <div id="blue-ready-status" class="ready-status not-ready">НЕ ГОТОВ</div>
+                    <button id="blue-ready-btn" class="ready-btn" onclick="toggleReady('blue')">ГОТОВ</button>
                 </div>
                 
-                <button id="blue-ready-btn" class="ready-btn" onclick="toggleReady('blue')">
-                    ГОТОВ
-                </button>
-                
-                <div class="section">
-                    <div class="section-title">БАНЫ (3)</div>
-                    <div class="bans-row" id="blue-bans">
-                        <div class="ban-slot"></div>
-                        <div class="ban-slot"></div>
-                        <div class="ban-slot"></div>
-                    </div>
+                <div class="bans-row" id="blue-bans">
+                    <div class="ban-slot"></div>
+                    <div class="ban-slot"></div>
+                    <div class="ban-slot"></div>
                 </div>
                 
-                <div class="section">
-                    <div class="section-title">ПИКИ (3)</div>
-                    <div class="picks-column" id="blue-picks">
-                        <div class="pick-slot"></div>
-                        <div class="pick-slot"></div>
-                        <div class="pick-slot"></div>
-                    </div>
+                <div class="pick-column" id="blue-picks">
+                    <div class="pick-slot"></div>
+                    <div class="pick-slot"></div>
+                    <div class="pick-slot"></div>
                 </div>
             </div>
             
             <!-- Панель бравлеров -->
             <div class="brawlers-panel">
-                <input type="text" id="search" class="search-box" placeholder="Поиск бравлера..." autocomplete="off">
-                <div class="brawlers-grid" id="brawlers-grid"></div>
+                <input type="text" class="search-box" id="search" placeholder="Поиск бравлера..." autocomplete="off">
+                <div class="brawlers-grid" id="brawlers-grid">
+                    <!-- Бравлеры будут загружены здесь -->
+                </div>
             </div>
             
             <!-- Красная команда -->
-            <div id="red-side" class="team-side team-red">
+            <div class="team-side team-red">
                 <div class="team-header">КРАСНАЯ КОМАНДА</div>
                 
-                <div id="red-ready-indicator" class="ready-indicator not-ready">
-                    <span>Не готов</span>
+                <div class="ready-section">
+                    <div id="red-ready-status" class="ready-status not-ready">НЕ ГОТОВ</div>
+                    <button id="red-ready-btn" class="ready-btn" onclick="toggleReady('red')">ГОТОВ</button>
                 </div>
                 
-                <button id="red-ready-btn" class="ready-btn" onclick="toggleReady('red')">
-                    ГОТОВ
-                </button>
-                
-                <div class="section">
-                    <div class="section-title">БАНЫ (3)</div>
-                    <div class="bans-row" id="red-bans">
-                        <div class="ban-slot"></div>
-                        <div class="ban-slot"></div>
-                        <div class="ban-slot"></div>
-                    </div>
+                <div class="bans-row" id="red-bans">
+                    <div class="ban-slot"></div>
+                    <div class="ban-slot"></div>
+                    <div class="ban-slot"></div>
                 </div>
                 
-                <div class="section">
-                    <div class="section-title">ПИКИ (3)</div>
-                    <div class="picks-column" id="red-picks">
-                        <div class="pick-slot"></div>
-                        <div class="pick-slot"></div>
-                        <div class="pick-slot"></div>
-                    </div>
+                <div class="pick-column" id="red-picks">
+                    <div class="pick-slot"></div>
+                    <div class="pick-slot"></div>
+                    <div class="pick-slot"></div>
                 </div>
             </div>
         </div>
@@ -782,8 +626,8 @@
         let maps = {};
         let modes = [];
         let autoResetTimer = null;
-        let stateUpdateInterval = null;
-        let selectedMapOption = null;
+        let selectedMode = null;
+        let selectedMap = null;
         
         // Инициализация
         function init() {
@@ -795,14 +639,13 @@
             // Проверяем админский доступ
             if (adminParam === ADMIN_SECRET) {
                 isAdmin = true;
-                document.getElementById('admin-panel').classList.add('active');
+                document.getElementById('map-selector').classList.add('active');
                 showNotification('Вы вошли как администратор', 'success');
             }
             
             // Определяем команду
             if (teamParam === 'blue' || teamParam === 'red') {
                 currentTeam = teamParam;
-                updateTeamIndicator();
                 showNotification(`Вы играете за ${currentTeam === 'blue' ? 'синюю' : 'красную'} команду`, 'success');
             } else {
                 showNotification('Вы наблюдатель', 'info');
@@ -810,28 +653,17 @@
             
             // Загружаем начальное состояние
             loadState();
-            loadMaps();
             
-            // Настраиваем интервалы обновления
-            stateUpdateInterval = setInterval(loadState, 2000);
-            setInterval(checkAutoReset, 5000);
+            // Загружаем карты для админа
+            if (isAdmin) {
+                loadMaps();
+            }
             
             // Настраиваем поиск
             document.getElementById('search').addEventListener('input', renderBrawlers);
-        }
-        
-        function updateTeamIndicator() {
-            const indicator = document.getElementById('team-indicator');
-            if (currentTeam === 'blue') {
-                indicator.textContent = 'СИНЯЯ КОМАНДА';
-                indicator.className = 'team-indicator team-blue-indicator';
-            } else if (currentTeam === 'red') {
-                indicator.textContent = 'КРАСНАЯ КОМАНДА';
-                indicator.className = 'team-indicator team-red-indicator';
-            } else {
-                indicator.textContent = 'НАБЛЮДАТЕЛЬ';
-                indicator.className = 'team-indicator';
-            }
+            
+            // Автообновление состояния
+            setInterval(loadState, 2000);
         }
         
         async function loadState() {
@@ -844,15 +676,6 @@
                     brawlers = data.brawlers || [];
                     updateUI();
                     renderBrawlers();
-                    
-                    // Если мы админ и есть карты, загружаем их
-                    if (isAdmin && data.maps && Object.keys(data.maps).length > 0) {
-                        maps = data.maps;
-                        modes = data.modes || [];
-                        if (!selectedMapOption) {
-                            renderMaps();
-                        }
-                    }
                 }
             } catch (error) {
                 console.error('Ошибка загрузки состояния:', error);
@@ -863,44 +686,67 @@
             if (!isAdmin) return;
             
             try {
-                const response = await fetch('/api/state');
+                const response = await fetch('/api/maps');
                 const data = await response.json();
                 
                 if (data.success) {
                     maps = data.maps || {};
                     modes = data.modes || [];
-                    renderMaps();
+                    renderModesTabs();
+                    renderMapsForMode(Object.keys(maps)[0] || 'Heist');
                 }
             } catch (error) {
                 console.error('Ошибка загрузки карт:', error);
             }
         }
         
-        function renderMaps() {
-            if (!isAdmin || !maps) return;
+        function renderModesTabs() {
+            const tabsContainer = document.getElementById('modes-tabs');
+            tabsContainer.innerHTML = '';
             
-            const container = document.getElementById('maps-container');
-            container.innerHTML = '';
+            Object.keys(maps).forEach(mode => {
+                const tab = document.createElement('div');
+                tab.className = `mode-tab ${selectedMode === mode ? 'active' : ''}`;
+                tab.textContent = mode.replace('_', ' ');
+                tab.onclick = () => {
+                    selectedMode = mode;
+                    renderModesTabs();
+                    renderMapsForMode(mode);
+                };
+                
+                tabsContainer.appendChild(tab);
+            });
             
-            Object.entries(maps).forEach(([mode, modeMaps]) => {
-                modeMaps.forEach(map => {
-                    const mapOption = document.createElement('div');
-                    mapOption.className = 'map-option';
-                    mapOption.dataset.mode = mode;
-                    mapOption.dataset.name = map.name;
-                    
-                    mapOption.innerHTML = `
-                        <div class="map-option-image">
-                            <img src="/static/mappool/${mode}/${map.filename}" alt="${map.name}">
-                        </div>
-                        <div class="map-option-name">${map.name}</div>
-                        <div class="map-option-mode">${mode}</div>
-                    `;
-                    
-                    mapOption.onclick = () => selectMap(map.name, mode);
-                    
-                    container.appendChild(mapOption);
-                });
+            // Активируем первую вкладку если не выбрана
+            if (!selectedMode && Object.keys(maps).length > 0) {
+                selectedMode = Object.keys(maps)[0];
+                document.querySelector('.mode-tab').classList.add('active');
+                renderMapsForMode(selectedMode);
+            }
+        }
+        
+        function renderMapsForMode(mode) {
+            const mapsGrid = document.getElementById('maps-grid');
+            mapsGrid.innerHTML = '';
+            
+            if (!maps[mode]) return;
+            
+            maps[mode].forEach(map => {
+                const mapOption = document.createElement('div');
+                mapOption.className = 'map-option';
+                if (selectedMap && selectedMap.name === map.name && selectedMap.mode === map.mode) {
+                    mapOption.classList.add('selected');
+                }
+                
+                mapOption.innerHTML = `
+                    <div class="map-option-image">
+                        <img src="${map.path}" alt="${map.name}">
+                    </div>
+                    <div class="map-option-name">${map.name}</div>
+                `;
+                
+                mapOption.onclick = () => selectMap(map.name, map.mode);
+                mapsGrid.appendChild(mapOption);
             });
         }
         
@@ -923,18 +769,8 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Снимаем выделение со всех карт
-                    document.querySelectorAll('.map-option').forEach(option => {
-                        option.classList.remove('selected');
-                    });
-                    
-                    // Выделяем выбранную карту
-                    const selectedOption = document.querySelector(`.map-option[data-name="${mapName}"][data-mode="${mapMode}"]`);
-                    if (selectedOption) {
-                        selectedOption.classList.add('selected');
-                    }
-                    
-                    selectedMapOption = { name: mapName, mode: mapMode };
+                    selectedMap = { name: mapName, mode: mapMode };
+                    renderMapsForMode(mapMode);
                     showNotification(`Карта "${mapName}" выбрана`, 'success');
                     loadState();
                 } else {
@@ -972,6 +808,8 @@
                     draftState = data.state;
                     updateUI();
                     showNotification(isReady ? 'Готовность сброшена' : 'Вы готовы!', 'success');
+                } else {
+                    showNotification(data.error || 'Ошибка', 'error');
                 }
             } catch (error) {
                 console.error('Ошибка изменения готовности:', error);
@@ -1063,7 +901,7 @@
             // Обновляем статус
             updateStatus();
             
-            // Обновляем карту и режим
+            // Обновляем отображение карты
             updateMapDisplay();
             
             // Обновляем готовность команд
@@ -1079,41 +917,39 @@
         
         function updateStatus() {
             const statusEl = document.getElementById('status');
-            let statusText = '';
             
             switch(draftState.phase) {
                 case 'waiting':
                     if (draftState.selected_map) {
                         if (draftState.blue_ready && draftState.red_ready) {
-                            statusText = 'ОЖИДАНИЕ НАЧАЛА ДРАФТА';
+                            statusEl.textContent = 'ОЖИДАНИЕ НАЧАЛА ДРАФТА';
                         } else {
-                            statusText = 'ОЖИДАНИЕ ГОТОВНОСТИ КОМАНД';
+                            const readyCount = (draftState.blue_ready ? 1 : 0) + (draftState.red_ready ? 1 : 0);
+                            statusEl.textContent = `ГОТОВНОСТЬ: ${readyCount}/2 КОМАНД`;
                         }
                     } else {
-                        statusText = 'ОЖИДАНИЕ ВЫБОРА КАРТЫ';
+                        statusEl.textContent = 'ОЖИДАНИЕ ВЫБОРА КАРТЫ АДМИНОМ';
                     }
                     break;
                     
                 case 'ban_blue':
-                    statusText = 'БАНИ: СИНЯЯ КОМАНДА';
+                    statusEl.textContent = 'БАНИ: СИНЯЯ КОМАНДА';
                     break;
                     
                 case 'ban_red':
-                    statusText = 'БАНИ: КРАСНАЯ КОМАНДА';
+                    statusEl.textContent = 'БАНИ: КРАСНАЯ КОМАНДА';
                     break;
                     
                 case 'pick':
                     const currentPick = draftState.current_pick_index + 1;
                     const teamTurn = draftState.current_turn === 'blue' ? 'СИНЯЯ' : 'КРАСНАЯ';
-                    statusText = `ПИК ${currentPick}/6: ${teamTurn} КОМАНДА`;
+                    statusEl.textContent = `ПИК ${currentPick}/6: ${teamTurn} КОМАНДА`;
                     break;
                     
                 case 'finished':
-                    statusText = 'ДРАФТ ЗАВЕРШЕН';
+                    statusEl.textContent = 'ДРАФТ ЗАВЕРШЕН';
                     break;
             }
-            
-            statusEl.textContent = statusText;
         }
         
         function updateMapDisplay() {
@@ -1124,15 +960,16 @@
             
             if (draftState.selected_map) {
                 mapNameEl.textContent = draftState.selected_map.name;
-                mapImageEl.src = `/static/mappool/${draftState.selected_map.mode}/${draftState.selected_map.filename}`;
+                mapImageEl.src = draftState.selected_map.path || '/static/placeholder.png';
                 mapImageEl.alt = draftState.selected_map.name;
                 
-                modeNameEl.textContent = draftState.selected_map.mode;
-                modeIconEl.src = `/static/modes/${draftState.selected_map.mode}.png`;
-                modeIconEl.alt = draftState.selected_map.mode;
+                modeNameEl.textContent = draftState.selected_mode || draftState.selected_map.mode;
+                modeIconEl.src = `/static/modes/${draftState.selected_mode || draftState.selected_map.mode}.png`;
+                modeIconEl.alt = draftState.selected_mode || draftState.selected_map.mode;
             } else {
-                mapNameEl.textContent = 'Выберите карту';
-                mapImageEl.src = '';
+                mapNameEl.textContent = 'Ожидание выбора карты';
+                mapImageEl.src = '/static/placeholder.png';
+                mapImageEl.alt = 'Карта не выбрана';
                 modeNameEl.textContent = 'Режим';
                 modeIconEl.src = '';
             }
@@ -1140,33 +977,33 @@
         
         function updateReadyStatus() {
             // Синяя команда
-            const blueReadyIndicator = document.getElementById('blue-ready-indicator');
+            const blueReadyStatus = document.getElementById('blue-ready-status');
             const blueReadyBtn = document.getElementById('blue-ready-btn');
             
             if (draftState.blue_ready) {
-                blueReadyIndicator.className = 'ready-indicator ready';
-                blueReadyIndicator.innerHTML = '<span>ГОТОВ</span> <span style="font-size:20px;">✅</span>';
+                blueReadyStatus.textContent = 'ГОТОВ';
+                blueReadyStatus.className = 'ready-status ready';
                 blueReadyBtn.textContent = 'ОТМЕНИТЬ';
                 blueReadyBtn.classList.add('unready');
             } else {
-                blueReadyIndicator.className = 'ready-indicator not-ready';
-                blueReadyIndicator.innerHTML = '<span>НЕ ГОТОВ</span> <span style="font-size:20px;">❌</span>';
+                blueReadyStatus.textContent = 'НЕ ГОТОВ';
+                blueReadyStatus.className = 'ready-status not-ready';
                 blueReadyBtn.textContent = 'ГОТОВ';
                 blueReadyBtn.classList.remove('unready');
             }
             
             // Красная команда
-            const redReadyIndicator = document.getElementById('red-ready-indicator');
+            const redReadyStatus = document.getElementById('red-ready-status');
             const redReadyBtn = document.getElementById('red-ready-btn');
             
             if (draftState.red_ready) {
-                redReadyIndicator.className = 'ready-indicator ready';
-                redReadyIndicator.innerHTML = '<span>ГОТОВ</span> <span style="font-size:20px;">✅</span>';
+                redReadyStatus.textContent = 'ГОТОВ';
+                redReadyStatus.className = 'ready-status ready';
                 redReadyBtn.textContent = 'ОТМЕНИТЬ';
                 redReadyBtn.classList.add('unready');
             } else {
-                redReadyIndicator.className = 'ready-indicator not-ready';
-                redReadyIndicator.innerHTML = '<span>НЕ ГОТОВ</span> <span style="font-size:20px;">❌</span>';
+                redReadyStatus.textContent = 'НЕ ГОТОВ';
+                redReadyStatus.className = 'ready-status not-ready';
                 redReadyBtn.textContent = 'ГОТОВ';
                 redReadyBtn.classList.remove('unready');
             }
@@ -1176,31 +1013,21 @@
             const banSlots = document.querySelectorAll(`#${team}-bans .ban-slot`);
             const pickSlots = document.querySelectorAll(`#${team}-picks .pick-slot`);
             
-            // Очищаем слоты
-            banSlots.forEach(slot => {
-                slot.innerHTML = '';
-                slot.className = 'ban-slot';
-            });
-            
-            pickSlots.forEach(slot => {
-                slot.innerHTML = '';
-                slot.classList.remove('active');
-            });
-            
-            // Заполняем баны
+            // Баны
             bans.forEach((brawler, index) => {
                 if (index < banSlots.length) {
                     if (brawler === 'hidden') {
-                        banSlots[index].className = 'ban-slot hidden';
                         banSlots[index].textContent = '?';
+                        banSlots[index].style.background = '#333';
                     } else {
                         const imgUrl = `/static/brawler_images/${brawler}.png`;
                         banSlots[index].innerHTML = `<img src="${imgUrl}" alt="${brawler}">`;
+                        banSlots[index].style.background = '#444';
                     }
                 }
             });
             
-            // Заполняем пики
+            // Пики
             picks.forEach((brawler, index) => {
                 if (index < pickSlots.length) {
                     const imgUrl = `/static/brawler_images/${brawler}.png`;
@@ -1208,15 +1035,17 @@
                         <img src="${imgUrl}" alt="${brawler}">
                         <div class="slot-name">${brawler.toUpperCase()}</div>
                     `;
-                    
-                    // Подсвечиваем активный слот
-                    if (draftState.phase === 'pick' && 
-                        draftState.current_turn === team && 
-                        index === picks.length) {
-                        pickSlots[index].classList.add('active');
-                    }
+                    pickSlots[index].classList.remove('active');
                 }
             });
+            
+            // Подсвечиваем активный слот
+            if (draftState.phase === 'pick' && draftState.current_turn === team) {
+                const emptyIndex = team === 'blue' ? draftState.blue_picks.length : draftState.red_picks.length;
+                if (emptyIndex < pickSlots.length) {
+                    pickSlots[emptyIndex].classList.add('active');
+                }
+            }
         }
         
         function renderBrawlers() {
@@ -1242,8 +1071,7 @@
                 const card = document.createElement('div');
                 card.className = `brawler-card ${isSelected ? 'disabled' : ''}`;
                 card.innerHTML = `
-                    <img src="/static/brawler_images/${brawler}.png" alt="${brawler}" 
-                         onerror="this.onerror=null; this.style.display='none'; this.parentElement.style.background='#333';">
+                    <img src="/static/brawler_images/${brawler}.png" alt="${brawler}">
                     <div class="brawler-name">${brawler}</div>
                 `;
                 
@@ -1286,26 +1114,12 @@
             }
         }
         
-        async function checkAutoReset() {
-            try {
-                const response = await fetch('/api/auto-reset-check');
-                const data = await response.json();
-                
-                if (data.auto_reset) {
-                    draftState = data.state;
-                    updateUI();
-                    renderBrawlers();
-                    showNotification('Драфт автоматически сброшен через 1 минуту', 'info');
-                }
-            } catch (error) {
-                console.error('Ошибка проверки автосброса:', error);
-            }
-        }
-        
         function showNotification(message, type = 'info') {
             const container = document.getElementById('notification-container');
             const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
+            notification.className = 'notification';
+            if (type === 'error') notification.style.background = '#e74c3c';
+            if (type === 'success') notification.style.background = '#2ecc71';
             notification.textContent = message;
             
             container.appendChild(notification);
