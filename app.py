@@ -41,7 +41,7 @@ font_name = pygame.font.SysFont("Arial", 40, bold=True)
 font_button = pygame.font.SysFont("Arial", 25, bold=True)
 
 # Параметры кнопки сброса
-reset_button_rect = pygame.Rect(WIDTH // 2 - 150, HEIGHT - 70, 300, 50)
+reset_button_rect = pygame.Rect(WIDTH // 2, HEIGHT - 70, 300, 50)
 BUTTON_COLOR = (200, 50, 50)      # Красный
 BUTTON_HOVER_COLOR = (255, 70, 70) # Светло-красный
 
@@ -94,3 +94,4 @@ while running:
     pygame.display.flip()
 
 pygame.quit()
+
