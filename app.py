@@ -1,18 +1,20 @@
 import os
 import random
 import time
-import uuid
 from flask import Flask, render_template, jsonify, request, session, send_from_directory
 from datetime import datetime, timedelta
 from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = 'super-secret-key'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+app.secret_key = 'super-secret-key-for-brawl-draft'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
-# Генерация админ-токена (в реальном приложении должен быть сложнее)
-ADMIN_TOKEN = "admin_" + str(uuid.uuid4()).replace("-", "")[:16]
-print(f"Admin URL: /admin/{ADMIN_TOKEN}")
+# Фиксированный админ-токен (можно изменить)
+ADMIN_TOKEN = "admin_9605183db62b41bd"
+print(f"✅ Админ-панель доступна по ссылке: /admin/{ADMIN_TOKEN}")
+print(f"✅ Наблюдатель: /")
+print(f"✅ Синяя команда: /blue")
+print(f"✅ Красная команда: /red")
 
 # Получаем список бравлеров
 def get_brawlers_list():
@@ -21,13 +23,14 @@ def get_brawlers_list():
     
     if os.path.exists(image_folder):
         for filename in os.listdir(image_folder):
-            if filename.lower().endswith('.png'):
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
                 name = os.path.splitext(filename)[0]
                 brawlers.append(name)
     
     return sorted(brawlers, key=lambda x: x.lower())
 
 BRWLERS = get_brawlers_list()
+print(f"✅ Загружено бравлеров: {len(BRWLERS)}")
 
 # Получаем список карт по режимам
 def get_maps_by_mode():
@@ -40,26 +43,30 @@ def get_maps_by_mode():
             if os.path.isdir(mode_path):
                 maps[mode_folder] = []
                 for map_file in os.listdir(mode_path):
-                    if map_file.lower().endswith('.png'):
+                    if map_file.lower().endswith(('.png', '.jpg', '.jpeg')):
                         map_name = os.path.splitext(map_file)[0]
                         maps[mode_folder].append({
                             'name': map_name,
                             'file': map_file,
                             'mode': mode_folder
                         })
+                print(f"✅ Режим '{mode_folder}': {len(maps[mode_folder])} карт")
+    
+    if not maps:
+        print("⚠️  ВНИМАНИЕ: Папка mappool пустая или не найдена!")
+        print("   Создайте папки: static/mappool/Heist/, static/mappool/Gem_Grab/ и т.д.")
+    
     return maps
 
 MAPS_BY_MODE = get_maps_by_mode()
 
-# Глобальное состояние драфта
+# Глобальное состояние драфта (в продакшене используйте Redis или базу данных)
 draft_states = {}
 
-# ID основной комнаты
-MAIN_ROOM_ID = "main_room"
-
-def get_or_create_state(room_id=MAIN_ROOM_ID):
-    if room_id not in draft_states:
-        draft_states[room_id] = {
+def get_or_create_state():
+    # Используем одно состояние для всех (можно расширить для многокомнатных)
+    if 'main' not in draft_states:
+        draft_states['main'] = {
             'blue_bans': [],
             'red_bans': [],
             'blue_picks': [],
@@ -79,7 +86,7 @@ def get_or_create_state(room_id=MAIN_ROOM_ID):
             'selected_mode': None
         }
     
-    return room_id, draft_states[room_id]
+    return 'main', draft_states['main']
 
 def check_auto_reset(state):
     """Проверяет, нужно ли сбросить драфт"""
@@ -194,12 +201,14 @@ def get_client_state(state, team):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'admin_token' not in session or session['admin_token'] != ADMIN_TOKEN:
-            return "Доступ запрещен", 403
+        # Проверяем токен из URL или сессии
+        token = request.args.get('token') or session.get('admin_token')
+        if not token or token != ADMIN_TOKEN:
+            return jsonify({'success': False, 'error': 'Доступ запрещен'}), 403
         return f(*args, **kwargs)
     return decorated_function
 
-# Маршруты для разных ролей
+# ========== РОЛИ ==========
 @app.route('/')
 def spectator_view():
     return render_template('index.html', role='spectator')
@@ -217,25 +226,26 @@ def admin_view(token):
     if token == ADMIN_TOKEN:
         session['admin_token'] = ADMIN_TOKEN
         return render_template('index.html', role='admin')
-    return "Неверная ссылка", 404
+    else:
+        return f"Неверная ссылка. Используйте: /admin/{ADMIN_TOKEN}", 404
 
-# API маршруты
+# ========== API МАРШРУТЫ ==========
 @app.route('/api/state')
 def get_state():
     role = request.args.get('role', 'spectator')
-    room_id = MAIN_ROOM_ID
-    _, state = get_or_create_state(room_id)
+    room_id, state = get_or_create_state()
     
     # Проверяем автосброс
     if check_auto_reset(state):
-        reset_draft()
-        _, state = get_or_create_state(room_id)
+        reset_state()
+        room_id, state = get_or_create_state()
     
     return jsonify({
         'success': True,
         'state': get_client_state(state, role if role in ['blue', 'red'] else 'spectator'),
         'brawlers': BRWLERS,
-        'role': role
+        'role': role,
+        'maps': MAPS_BY_MODE
     })
 
 @app.route('/api/ready', methods=['POST'])
@@ -246,7 +256,7 @@ def set_ready():
     if role not in ['blue', 'red']:
         return jsonify({'success': False, 'error': 'Неверная роль'})
     
-    room_id, state = get_or_create_state(MAIN_ROOM_ID)
+    room_id, state = get_or_create_state()
     
     if role == 'blue':
         state['blue_ready'] = True
@@ -259,6 +269,7 @@ def set_ready():
     if state['blue_ready'] and state['red_ready'] and state['phase'] == 'waiting':
         state['phase'] = 'ban_blue'
         state['current_turn'] = 'blue'
+        print(f"🚀 Драфт начат! Первая фаза: {state['phase']}")
     
     return jsonify({
         'success': True,
@@ -278,16 +289,17 @@ def select_brawler():
     if brawler not in BRWLERS:
         return jsonify({'success': False, 'error': 'Бравлер не найден'})
     
-    room_id, state = get_or_create_state(MAIN_ROOM_ID)
+    room_id, state = get_or_create_state()
     
     # Проверяем автосброс
     if check_auto_reset(state):
-        reset_draft()
+        reset_state()
         return jsonify({'success': False, 'error': 'Драфт был сброшен по таймеру', 'auto_reset': True})
     
     success, message = update_state(state, role, brawler, 'select')
     
     if success:
+        print(f"✅ {role} выбрал бравлера: {brawler}")
         return jsonify({
             'success': True,
             'message': message,
@@ -299,9 +311,16 @@ def select_brawler():
 @app.route('/api/reset', methods=['POST'])
 @admin_required
 def reset_draft():
-    room_id, state = get_or_create_state(MAIN_ROOM_ID)
-    
-    state.update({
+    reset_state()
+    return jsonify({
+        'success': True,
+        'state': get_client_state(draft_states['main'], 'spectator'),
+        'message': 'Драфт сброшен!'
+    })
+
+def reset_state():
+    """Сброс состояния драфта"""
+    draft_states['main'] = {
         'blue_bans': [],
         'red_bans': [],
         'blue_picks': [],
@@ -312,13 +331,15 @@ def reset_draft():
         'picking_team': None,
         'pick_order': [],
         'current_pick_index': 0,
+        'created_at': time.time(),
         'last_action': time.time(),
         'finished_at': None,
         'blue_ready': False,
-        'red_ready': False
-    })
-    
-    return jsonify({'success': True, 'state': get_client_state(state, 'spectator')})
+        'red_ready': False,
+        'selected_map': None,
+        'selected_mode': None
+    }
+    print("🔄 Драфт сброшен")
 
 @app.route('/api/maps')
 def get_maps():
@@ -335,7 +356,7 @@ def select_map():
     map_name = data.get('map_name')
     map_mode = data.get('map_mode')
     
-    room_id, state = get_or_create_state(MAIN_ROOM_ID)
+    room_id, state = get_or_create_state()
     
     # Проверяем, что карта существует
     if map_mode not in MAPS_BY_MODE:
@@ -348,6 +369,7 @@ def select_map():
             state['selected_mode'] = map_mode
             state['last_action'] = time.time()
             map_found = True
+            print(f"🗺️  Выбрана карта: {map_name} ({map_mode})")
             break
     
     if not map_found:
@@ -359,11 +381,44 @@ def select_map():
         'message': f'Карта {map_name} выбрана!'
     })
 
+# Статические файлы
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
+
+# Тестовая страница
+@app.route('/test')
+def test_page():
+    return jsonify({
+        'status': 'online',
+        'brawlers': len(BRWLERS),
+        'maps': {mode: len(maps) for mode, maps in MAPS_BY_MODE.items()},
+        'admin_url': f'/admin/{ADMIN_TOKEN}'
+    })
+
+# Фавикон (чтобы не было ошибок)
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('static', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    print(f"Ссылки для доступа:")
-    print(f"  Наблюдатель: http://localhost:{port}/")
-    print(f"  Синяя команда: http://localhost:{port}/blue")
-    print(f"  Красная команда: http://localhost:{port}/red")
-    print(f"  Админ: http://localhost:{port}/admin/{ADMIN_TOKEN}")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    print("\n" + "="*50)
+    print("🎮 BRAWL STARS DRAFT SYSTEM")
+    print("="*50)
+    print(f"🔗 Наблюдатель: http://localhost:{port}/")
+    print(f"🔵 Синяя команда: http://localhost:{port}/blue")
+    print(f"🔴 Красная команда: http://localhost:{port}/red")
+    print(f"⚡ Администратор: http://localhost:{port}/admin/{ADMIN_TOKEN}")
+    print(f"📊 Тестовая страница: http://localhost:{port}/test")
+    print("="*50)
+    print(f"✅ Всего бравлеров: {len(BRWLERS)}")
+    print(f"✅ Режимов карт: {len(MAPS_BY_MODE)}")
+    if MAPS_BY_MODE:
+        for mode, maps in MAPS_BY_MODE.items():
+            print(f"   • {mode}: {len(maps)} карт")
+    else:
+        print("⚠️  Карты не загружены! Создайте папки в static/mappool/")
+    print("="*50 + "\n")
+    
+    app.run(host='0.0.0.0', port=port, debug=False)
