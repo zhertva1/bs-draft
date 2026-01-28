@@ -5,40 +5,196 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root { --blue: #3498db; --red: #e74c3c; --bg: #0f0f0f; }
-        body { background: var(--bg); color: white; font-family: 'Arial Black', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Arial Black', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
         
-        .header { height: 80px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 24px; border-bottom: 3px solid #333; }
+        .header { 
+            height: 80px; 
+            background: #1a1a1a; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 24px; 
+            border-bottom: 3px solid #333; 
+            position: relative;
+        }
+        
+        .timer-display {
+            position: absolute;
+            right: 20px;
+            font-size: 16px;
+            color: #888;
+        }
 
-        .main-content { display: flex; flex: 1; padding: 10px; gap: 20px; }
+        .main-content { 
+            display: flex; 
+            flex: 1; 
+            padding: 10px; 
+            gap: 20px; 
+        }
 
         /* Стороны команд */
-        .side { width: 300px; display: flex; flex-direction: column; gap: 15px; }
-        .ban-row { display: flex; gap: 10px; justify-content: center; }
-        .ban-slot { width: 60px; height: 60px; background: #222; border: 2px solid #444; position: relative; overflow: hidden; }
-        .pick-column { display: flex; flex-direction: column; gap: 15px; align-items: center; }
-        .pick-slot { width: 180px; height: 180px; background: #222; border: 4px solid #444; position: relative; overflow: hidden; border-radius: 10px; }
+        .side { 
+            width: 300px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+        .ban-row { 
+            display: flex; 
+            gap: 10px; 
+            justify-content: center; 
+        }
+        .ban-slot { 
+            width: 60px; 
+            height: 60px; 
+            background: #222; 
+            border: 2px solid #444; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        .pick-column { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            align-items: center; 
+        }
+        .pick-slot { 
+            width: 180px; 
+            height: 180px; 
+            background: #222; 
+            border: 4px solid #444; 
+            position: relative; 
+            overflow: hidden; 
+            border-radius: 10px; 
+        }
         
-        .blue .pick-slot.active { border-color: var(--blue); box-shadow: 0 0 20px var(--blue); }
-        .red .pick-slot.active { border-color: var(--red); box-shadow: 0 0 20px var(--red); }
+        .blue .pick-slot.active { 
+            border-color: var(--blue); 
+            box-shadow: 0 0 20px var(--blue); 
+        }
+        .red .pick-slot.active { 
+            border-color: var(--red); 
+            box-shadow: 0 0 20px var(--red); 
+        }
 
         /* Центр */
-        .center { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-        #search { width: 100%; padding: 15px; background: #222; border: none; color: white; font-size: 18px; border-radius: 5px; }
-        .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; overflow-y: auto; padding-right: 5px; }
+        .center { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+        }
+        #search { 
+            width: 100%; 
+            padding: 15px; 
+            background: #222; 
+            border: none; 
+            color: white; 
+            font-size: 18px; 
+            border-radius: 5px; 
+        }
+        .grid { 
+            flex: 1; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 10px; 
+            overflow-y: auto; 
+            padding-right: 5px; 
+        }
         
-        .brawler-card { background: #1a1a1a; border-radius: 5px; cursor: pointer; position: relative; transition: 0.2s; border: 2px solid transparent; }
-        .brawler-card:hover { transform: scale(1.05); }
-        .brawler-card img { width: 100%; display: block; border-radius: 3px; }
-        .brawler-card .name { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.7); font-size: 10px; text-align: center; }
-        .brawler-card.disabled { opacity: 0.2; filter: grayscale(1); cursor: not-allowed; }
+        .brawler-card { 
+            width: 100px; 
+            height: 100px; 
+            background: #1a1a1a; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            position: relative; 
+            transition: 0.2s; 
+            border: 2px solid transparent; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .brawler-card:hover { 
+            transform: scale(1.05); 
+            border-color: #444;
+        }
+        .brawler-card img { 
+            width: 100%; 
+            height: 70px; 
+            object-fit: contain; 
+            display: block; 
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .brawler-card .name { 
+            height: 30px; 
+            width: 100%; 
+            background: rgba(0,0,0,0.8); 
+            font-size: 10px; 
+            text-align: center; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .brawler-card.disabled { 
+            opacity: 0.2; 
+            filter: grayscale(1); 
+            cursor: not-allowed; 
+        }
 
-        .slot-img { width: 100%; height: 100%; object-fit: cover; }
-        .slot-name { position: absolute; bottom: 5px; width: 100%; text-align: center; text-shadow: 2px 2px 2px black; font-size: 14px; }
+        .slot-img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        .slot-name { 
+            position: absolute; 
+            bottom: 5px; 
+            width: 100%; 
+            text-align: center; 
+            text-shadow: 2px 2px 2px black; 
+            font-size: 14px; 
+        }
+        
+        .reset-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: fadeInOut 2s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header" id="status">ОЖИДАНИЕ ИГРОКОВ...</div>
+    <div class="header" id="status">
+        ОЖИДАНИЕ ИГРОКОВ...
+        <div class="timer-display" id="timer">Автосброс: --:--</div>
+    </div>
 
     <div class="main-content">
         <!-- BLUE SIDE -->
@@ -54,7 +210,9 @@
         <!-- CENTER -->
         <div class="center">
             <input type="text" id="search" placeholder="ПОИСК БОЙЦА..." oninput="filterBrawlers()">
-            <div class="grid" id="grid"></div>
+            <div class="grid" id="grid">
+                <!-- Бравлеры будут загружены динамически -->
+            </div>
         </div>
 
         <!-- RED SIDE -->
@@ -73,20 +231,37 @@
         const urlParams = new URLSearchParams(window.location.search);
         const myTeam = urlParams.get('team'); // blue, red, или null (spectator)
         
-        const brawlers = ["Shelly", "Nita", "Colt", "Bull", "Brock", "El Primo", "Barley", "Poco", "Rosa", "Jessie", "Dynamike", "Tick", "8-Bit", "Rico", "Darryl", "Penny", "Carl", "Jacky", "Piper", "Pam", "Frank", "Bibi", "Bea", "Nani", "Edgar", "Mortis", "Tara", "Gene", "Max", "Mr. P", "Sprout", "Byron", "Squeak", "Spike", "Crow", "Leon", "Sandy", "Amber", "Meg", "Gale", "Surge", "Colette", "Lou", "Ruffs", "Belle", "Buzz", "Ash", "Lola", "Fang", "Eve", "Janet", "Otis"];
+        let brawlers = [];
+        let resetCountdown = null;
 
         // Инициализация
         socket.emit('join', { team: myTeam });
 
+        // Получаем список бравлеров от сервера
+        socket.on('brawlers_list', (serverBrawlers) => {
+            brawlers = serverBrawlers;
+            createGrid();
+        });
+
         function createGrid() {
             const grid = document.getElementById('grid');
-            brawlers.sort().forEach(name => {
+            grid.innerHTML = ''; // Очищаем старые карточки
+            
+            brawlers.forEach(name => {
                 const card = document.createElement('div');
                 card.className = 'brawler-card';
                 card.id = 'card-' + name;
-                card.innerHTML = `<img src="/static/brawler_images/${name}.png"><div class="name">${name.toUpperCase()}</div>`;
+                card.innerHTML = `
+                    <img src="/static/brawler_images/${name}.png" alt="${name}">
+                    <div class="name">${name.toUpperCase()}</div>
+                `;
                 card.onclick = () => {
-                    if(myTeam) socket.emit('select_brawler', { brawler: name, team: myTeam });
+                    if(myTeam && !card.classList.contains('disabled')) {
+                        socket.emit('select_brawler', { 
+                            brawler: name, 
+                            team: myTeam 
+                        });
+                    }
                 };
                 grid.appendChild(card);
             });
@@ -96,42 +271,135 @@
             const query = document.getElementById('search').value.toLowerCase();
             brawlers.forEach(name => {
                 const card = document.getElementById('card-' + name);
-                card.style.display = name.toLowerCase().includes(query) ? 'block' : 'none';
+                if(card) {
+                    const display = name.toLowerCase().includes(query) ? 'flex' : 'none';
+                    card.style.display = display;
+                }
             });
+        }
+
+        function updateTimerDisplay(secondsLeft) {
+            const timerEl = document.getElementById('timer');
+            if(secondsLeft > 0) {
+                const mins = Math.floor(secondsLeft / 60);
+                const secs = secondsLeft % 60;
+                timerEl.textContent = `Автосброс: ${mins}:${secs.toString().padStart(2, '0')}`;
+            } else {
+                timerEl.textContent = 'Автосброс: --:--';
+            }
+        }
+
+        function startResetCountdown() {
+            if(resetCountdown) {
+                clearInterval(resetCountdown);
+            }
+            
+            let secondsLeft = 60;
+            updateTimerDisplay(secondsLeft);
+            
+            resetCountdown = setInterval(() => {
+                secondsLeft--;
+                updateTimerDisplay(secondsLeft);
+                
+                if(secondsLeft <= 0) {
+                    clearInterval(resetCountdown);
+                    resetCountdown = null;
+                }
+            }, 1000);
         }
 
         socket.on('update_draft', (data) => {
             // Статус
             const statusEl = document.getElementById('status');
-            if(data.phase === 'waiting') statusEl.innerText = "ОЖИДАНИЕ СОПЕРНИКА...";
-            if(data.phase === 'ban') statusEl.innerText = "ФАЗА БАНОВ (СКРЫТО)";
-            if(data.phase === 'pick') statusEl.innerText = "ХОД: " + data.picking_order[data.turn_index].toUpperCase();
-            if(data.phase === 'finished') statusEl.innerText = "ДРАФТ ЗАВЕРШЕН";
+            if(data.phase === 'waiting') {
+                statusEl.innerHTML = "ОЖИДАНИЕ СОПЕРНИКА...<div class='timer-display' id='timer'>Автосброс: --:--</div>";
+            }
+            if(data.phase === 'ban') {
+                statusEl.innerHTML = "ФАЗА БАНОВ (СКРЫТО)<div class='timer-display' id='timer'>Автосброс: --:--</div>";
+            }
+            if(data.phase === 'pick') {
+                statusEl.innerHTML = "ХОД: " + data.picking_order[data.turn_index].toUpperCase() + 
+                                  "<div class='timer-display' id='timer'>Автосброс: --:--</div>";
+            }
+            if(data.phase === 'finished') {
+                statusEl.innerHTML = "ДРАФТ ЗАВЕРШЕН<div class='timer-display' id='timer'>Автосброс: 01:00</div>";
+                startResetCountdown();
+            }
 
             // Обновление банов и пиков
             updateSlots('blue', data.blue_bans, data.blue_picks, data.phase, data.picking_order[data.turn_index]);
             updateSlots('red', data.red_bans, data.red_picks, data.phase, data.picking_order[data.turn_index]);
 
-            // Блокировка иконок
-            data.all_selected.forEach(name => {
-                document.getElementById('card-' + name).classList.add('disabled');
-            });
+            // Блокировка иконок выбранных бравлеров
+            if(brawlers.length > 0) {
+                // Сначала снимаем блокировку со всех
+                brawlers.forEach(name => {
+                    const card = document.getElementById('card-' + name);
+                    if(card) {
+                        card.classList.remove('disabled');
+                    }
+                });
+                
+                // Блокируем выбранных
+                data.all_selected.forEach(name => {
+                    const card = document.getElementById('card-' + name);
+                    if(card) {
+                        card.classList.add('disabled');
+                    }
+                });
+            }
         });
 
         function updateSlots(team, bans, picks, phase, currentTurn) {
             const banSlots = document.querySelectorAll(`.${team} .ban-slot`);
             const pickSlots = document.querySelectorAll(`.${team} .pick-slot`);
 
+            // Очищаем слоты
+            banSlots.forEach(slot => slot.innerHTML = '');
+            pickSlots.forEach(slot => slot.innerHTML = '');
+
+            // Заполняем баны
             bans.forEach((name, i) => {
-                if(name) banSlots[i].innerHTML = `<img class="slot-img" src="/static/brawler_images/${name}.png" style="filter:grayscale(1)">`;
+                if(name && i < banSlots.length) {
+                    banSlots[i].innerHTML = `<img class="slot-img" src="/static/brawler_images/${name}.png" style="filter:grayscale(1)">`;
+                }
             });
 
+            // Заполняем пики
             picks.forEach((name, i) => {
-                if(name) pickSlots[i].innerHTML = `<img class="slot-img" src="/static/brawler_images/${name}.png"><div class="slot-name">${name.toUpperCase()}</div>`;
-                pickSlots[i].classList.toggle('active', phase === 'pick' && currentTurn === team);
+                if(name && i < pickSlots.length) {
+                    pickSlots[i].innerHTML = `
+                        <img class="slot-img" src="/static/brawler_images/${name}.png">
+                        <div class="slot-name">${name.toUpperCase()}</div>
+                    `;
+                    pickSlots[i].classList.toggle('active', phase === 'pick' && currentTurn === team);
+                }
             });
         }
 
+        socket.on('reset_timer', () => {
+            // Показываем уведомление о сбросе
+            const notification = document.createElement('div');
+            notification.className = 'reset-notification';
+            notification.textContent = 'Драфт автоматически сброшен!';
+            document.body.appendChild(notification);
+            
+            // Удаляем уведомление через 2 секунды
+            setTimeout(() => {
+                if(notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 2000);
+            
+            // Сбрасываем таймер
+            if(resetCountdown) {
+                clearInterval(resetCountdown);
+                resetCountdown = null;
+            }
+            updateTimerDisplay(0);
+        });
+
+        // Инициализация при загрузке
         createGrid();
     </script>
 </body>
