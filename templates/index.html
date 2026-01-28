@@ -3,778 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars Draft - Профессиональный драфт</title>
+    <title>Brawl Stars Draft</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --blue: #3498db;
-            --blue-dark: #2980b9;
-            --red: #e74c3c;
-            --red-dark: #c0392b;
-            --bg: #0f0f0f;
-            --card-bg: #1a1a1a;
-            --text: #ffffff;
-            --text-secondary: #b0b0b0;
-            --border: #333333;
-            --success: #2ecc71;
-            --warning: #f39c12;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0f0f0f; 
+            color: white; 
+            font-family: Arial, sans-serif; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* Шапка */
-        .header {
-            background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 2px solid var(--border);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
+        .header { 
+            background: #1a1a1a; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 24px; 
             font-weight: bold;
-            background: linear-gradient(45deg, var(--blue), var(--red));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            border-bottom: 3px solid #333;
         }
         
-        .logo i {
-            font-size: 28px;
+        .main-content { 
+            display: flex; 
+            flex: 1; 
+            padding: 20px; 
+            gap: 20px; 
         }
         
-        .status-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        #status {
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-        }
-        
-        .timer {
-            font-size: 14px;
-            color: var(--warning);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .timer i {
-            font-size: 12px;
-        }
-        
-        .team-indicator {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        .team-blue {
-            background: var(--blue);
-        }
-        
-        .team-red {
-            background: var(--red);
-        }
-        
-        /* Основной контент */
-        .main-content {
-            flex: 1;
-            display: flex;
-            padding: 15px;
-            gap: 15px;
-            min-height: 0;
-        }
-        
-        /* Боковые панели команд */
-        .side {
-            width: 280px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            background: rgba(30, 30, 30, 0.7);
+        .side { 
+            width: 280px; 
+            background: #222; 
+            padding: 15px; 
             border-radius: 10px;
-            padding: 15px;
-            border: 1px solid var(--border);
+            border: 2px solid;
         }
         
-        .side-header {
-            text-align: center;
-            padding-bottom: 10px;
-            border-bottom: 2px solid;
-            font-size: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .blue { border-color: #3498db; }
+        .red { border-color: #e74c3c; }
+        
+        .ban-row, .pick-column { 
+            margin: 15px 0; 
         }
         
-        .blue .side-header {
-            color: var(--blue);
-            border-color: var(--blue);
+        .ban-slot { 
+            width: 60px; 
+            height: 60px; 
+            background: #333; 
+            border: 2px dashed #555; 
+            margin: 5px; 
+            display: inline-block;
         }
         
-        .red .side-header {
-            color: var(--red);
-            border-color: var(--red);
-        }
-        
-        .bans-container, .picks-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .section-title {
-            font-size: 14px;
-            color: var(--text-secondary);
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        
-        .ban-row {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .ban-slot {
-            width: 60px;
-            height: 60px;
-            background: rgba(40, 40, 40, 0.8);
-            border: 2px dashed var(--border);
+        .pick-slot { 
+            width: 100%; 
+            height: 100px; 
+            background: #333; 
+            border: 3px solid #555; 
+            margin: 10px 0; 
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            font-size: 12px;
-            overflow: hidden;
-            position: relative;
         }
         
-        .ban-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: grayscale(100%) brightness(0.5);
-        }
-        
-        .pick-column {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .pick-slot {
-            width: 100%;
-            height: 120px;
-            background: rgba(40, 40, 40, 0.8);
-            border: 3px solid var(--border);
+        .center { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            background: #222; 
+            padding: 20px; 
             border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-            transition: all 0.3s ease;
         }
         
-        .blue .pick-slot.active {
-            border-color: var(--blue);
-            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
-            animation: pulse-blue 1.5s infinite;
-        }
-        
-        .red .pick-slot.active {
-            border-color: var(--red);
-            box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
-            animation: pulse-red 1.5s infinite;
-        }
-        
-        @keyframes pulse-blue {
-            0%, 100% { box-shadow: 0 0 15px rgba(52, 152, 219, 0.5); }
-            50% { box-shadow: 0 0 25px rgba(52, 152, 219, 0.8); }
-        }
-        
-        @keyframes pulse-red {
-            0%, 100% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.5); }
-            50% { box-shadow: 0 0 25px rgba(231, 76, 60, 0.8); }
-        }
-        
-        .pick-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .slot-name {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 5px;
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Центральная панель */
-        .center {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: rgba(30, 30, 30, 0.7);
-            border-radius: 10px;
-            padding: 15px;
-            border: 1px solid var(--border);
-            min-height: 0;
-        }
-        
-        .search-container {
-            position: relative;
-        }
-        
-        #search {
-            width: 100%;
-            padding: 15px 15px 15px 45px;
-            background: rgba(40, 40, 40, 0.9);
-            border: 2px solid var(--border);
+        #search { 
+            padding: 15px; 
+            background: #333; 
+            border: 2px solid #555; 
+            color: white; 
+            font-size: 16px; 
             border-radius: 8px;
-            color: var(--text);
-            font-size: 16px;
-            transition: all 0.3s;
+            margin-bottom: 20px;
         }
         
-        #search:focus {
-            outline: none;
-            border-color: var(--blue);
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        .grid { 
+            flex: 1; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 10px; 
+            overflow-y: auto; 
+            padding: 10px;
         }
         
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-        }
-        
-        .grid-container {
-            flex: 1;
+        .brawler-card { 
+            width: 100px; 
+            height: 100px; 
+            background: #333; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            display: flex; 
+            flex-direction: column; 
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .grid-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 5px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 10px;
-        }
-        
-        .brawlers-count {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        
-        .grid-controls {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .grid-btn {
-            padding: 5px 10px;
-            background: rgba(40, 40, 40, 0.9);
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            color: var(--text);
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .grid-btn:hover {
-            background: rgba(60, 60, 60, 0.9);
-        }
-        
-        .grid {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        
-        /* Стили для скроллбара */
-        .grid::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .grid::-webkit-scrollbar-track {
-            background: rgba(40, 40, 40, 0.5);
-            border-radius: 4px;
-        }
-        
-        .grid::-webkit-scrollbar-thumb {
-            background: var(--blue);
-            border-radius: 4px;
-        }
-        
-        .grid::-webkit-scrollbar-thumb:hover {
-            background: var(--blue-dark);
-        }
-        
-        /* Карточки бравлеров */
-        .brawler-card {
-            width: 100px;
-            height: 100px;
-            background: var(--card-bg);
-            border-radius: 8px;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s ease;
             border: 2px solid transparent;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
         }
         
-        .brawler-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--blue);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        .brawler-card:hover { 
+            transform: scale(1.05); 
+            border-color: #3498db;
         }
         
-        .brawler-card.disabled {
-            opacity: 0.3;
-            filter: grayscale(100%);
-            cursor: not-allowed;
-            transform: none;
-            border-color: transparent !important;
-            box-shadow: none !important;
+        .brawler-card.disabled { 
+            opacity: 0.3; 
+            cursor: not-allowed; 
         }
         
-        .brawler-card.disabled:hover {
-            transform: none;
-            border-color: transparent;
-            box-shadow: none;
-        }
-        
-        .brawler-img-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .brawler-card img { 
+            width: 100%; 
+            height: 70px; 
+            object-fit: contain; 
             padding: 5px;
         }
         
-        .brawler-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-        
-        .brawler-name {
-            height: 22px;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
+        .brawler-name { 
+            height: 30px; 
+            background: rgba(0,0,0,0.8); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 10px; 
+            font-weight: bold; 
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0 3px;
-            text-align: center;
-            line-height: 1.1;
         }
         
-        /* Уведомления */
+        .reset-btn { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #e74c3c; 
+            color: white; 
+            border: none; 
+            padding: 15px 25px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        
         .notification {
             position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(90deg, var(--blue), var(--blue-dark));
-            color: white;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: bold;
-            z-index: 1000;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
-            animation-fill-mode: forwards;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        @keyframes slideIn {
-            from { top: -100px; opacity: 0; }
-            to { top: 80px; opacity: 1; }
-        }
-        
-        @keyframes fadeOut {
-            to { opacity: 0; visibility: hidden; }
-        }
-        
-        /* Кнопка сброса */
-        .reset-btn {
-            position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
-            background: linear-gradient(90deg, var(--red), var(--red-dark));
+            background: #3498db;
             color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 12px 25px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s;
-            z-index: 100;
+            padding: 15px;
+            border-radius: 8px;
+            animation: fadeInOut 3s;
         }
         
-        .reset-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-        
-        /* Мобильная адаптация */
-        @media (max-width: 1200px) {
-            .main-content {
-                flex-direction: column;
-                height: auto;
-            }
-            
-            .side {
-                width: 100%;
-                flex-direction: row;
-                justify-content: space-between;
-            }
-            
-            .bans-container, .picks-container {
-                width: 48%;
-            }
-            
-            .pick-column {
-                flex-direction: row;
-            }
-            
-            .pick-slot {
-                height: 100px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                height: auto;
-                padding: 10px;
-                gap: 10px;
-            }
-            
-            .side {
-                flex-direction: column;
-            }
-            
-            .bans-container, .picks-container {
-                width: 100%;
-            }
-            
-            .grid {
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            }
-            
-            .brawler-card {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .brawler-name {
-                font-size: 8px;
-                height: 18px;
-            }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <!-- Шапка -->
-    <div class="header">
-        <div class="logo">
-            <i class="fas fa-fist-raised"></i>
-            <span>Brawl Stars Draft</span>
-        </div>
-        
-        <div class="status-container">
-            <div id="status">ОЖИДАНИЕ ИГРОКОВ...</div>
-            <div class="timer" id="timer">
-                <i class="fas fa-clock"></i>
-                <span id="timer-text">Автосброс: --:--</span>
-            </div>
-        </div>
-        
-        <div id="team-indicator" class="team-indicator" style="display: none;">
-            <!-- Будет заполняться скриптом -->
-        </div>
-    </div>
+
+    <div class="header" id="status">Brawl Stars Draft</div>
     
-    <!-- Основной контент -->
     <div class="main-content">
         <!-- Синяя команда -->
         <div class="side blue">
-            <div class="side-header">Синяя команда</div>
-            
-            <div class="bans-container">
-                <div class="section-title">БАНЫ (3)</div>
-                <div class="ban-row" id="blue-bans-ui">
-                    <div class="ban-slot"></div>
-                    <div class="ban-slot"></div>
-                    <div class="ban-slot"></div>
-                </div>
+            <h3 style="color: #3498db; text-align: center;">СИНЯЯ КОМАНДА</h3>
+            <div class="ban-row" id="blue-bans-ui">
+                <div class="ban-slot"></div>
+                <div class="ban-slot"></div>
+                <div class="ban-slot"></div>
             </div>
-            
-            <div class="picks-container">
-                <div class="section-title">ПИКИ (3)</div>
-                <div class="pick-column" id="blue-picks-ui">
-                    <div class="pick-slot"></div>
-                    <div class="pick-slot"></div>
-                    <div class="pick-slot"></div>
-                </div>
+            <div class="pick-column" id="blue-picks-ui">
+                <div class="pick-slot"></div>
+                <div class="pick-slot"></div>
+                <div class="pick-slot"></div>
             </div>
         </div>
         
         <!-- Центр -->
         <div class="center">
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="search" placeholder="Введите имя бравлера для поиска..." autocomplete="off">
-            </div>
-            
-            <div class="grid-container">
-                <div class="grid-header">
-                    <div class="brawlers-count">
-                        Всего бравлеров: <span id="total-count">0</span> | 
-                        Доступно: <span id="available-count">0</span>
-                    </div>
-                    
-                    <div class="grid-controls">
-                        <button class="grid-btn" onclick="sortBrawlers('name')">По имени</button>
-                        <button class="grid-btn" onclick="sortBrawlers('available')">По доступности</button>
-                    </div>
-                </div>
-                
-                <div class="grid" id="grid">
-                    <!-- Бравлеры будут загружены динамически -->
-                </div>
+            <input type="text" id="search" placeholder="Поиск бравлера..." autocomplete="off">
+            <div class="grid" id="grid">
+                <!-- Бравлеры загружаются динамически -->
             </div>
         </div>
         
         <!-- Красная команда -->
         <div class="side red">
-            <div class="side-header">Красная команда</div>
-            
-            <div class="bans-container">
-                <div class="section-title">БАНЫ (3)</div>
-                <div class="ban-row" id="red-bans-ui">
-                    <div class="ban-slot"></div>
-                    <div class="ban-slot"></div>
-                    <div class="ban-slot"></div>
-                </div>
+            <h3 style="color: #e74c3c; text-align: center;">КРАСНАЯ КОМАНДА</h3>
+            <div class="ban-row" id="red-bans-ui">
+                <div class="ban-slot"></div>
+                <div class="ban-slot"></div>
+                <div class="ban-slot"></div>
             </div>
-            
-            <div class="picks-container">
-                <div class="section-title">ПИКИ (3)</div>
-                <div class="pick-column" id="red-picks-ui">
-                    <div class="pick-slot"></div>
-                    <div class="pick-slot"></div>
-                    <div class="pick-slot"></div>
-                </div>
+            <div class="pick-column" id="red-picks-ui">
+                <div class="pick-slot"></div>
+                <div class="pick-slot"></div>
+                <div class="pick-slot"></div>
             </div>
         </div>
     </div>
     
-    <!-- Кнопка сброса -->
-    <button class="reset-btn" onclick="resetDraft()">
-        <i class="fas fa-redo"></i>
-        СБРОСИТЬ ДРАФТ
-    </button>
+    <button class="reset-btn" onclick="resetDraft()">СБРОСИТЬ</button>
     
-    <!-- Уведомления -->
-    <div id="notification-container"></div>
+    <div id="notification"></div>
     
     <script>
         // Инициализация
         const socket = io();
         const urlParams = new URLSearchParams(window.location.search);
-        const myTeam = urlParams.get('team'); // blue, red, или null (spectator)
+        const myTeam = urlParams.get('team'); // blue, red, или null
         
         let brawlers = [];
-        let currentFilter = '';
-        let currentSort = 'name';
-        let resetCountdown = null;
-        
-        // Определяем команду пользователя
-        function initUserTeam() {
-            const teamIndicator = document.getElementById('team-indicator');
-            
-            if (myTeam === 'blue') {
-                teamIndicator.textContent = 'ВЫ: СИНЯЯ КОМАНДА';
-                teamIndicator.className = 'team-indicator team-blue';
-                teamIndicator.style.display = 'block';
-                showNotification('Вы играете за синюю команду');
-            } else if (myTeam === 'red') {
-                teamIndicator.textContent = 'ВЫ: КРАСНАЯ КОМАНДА';
-                teamIndicator.className = 'team-indicator team-red';
-                teamIndicator.style.display = 'block';
-                showNotification('Вы играете за красную команду');
-            } else {
-                teamIndicator.style.display = 'none';
-                showNotification('Вы наблюдатель');
-            }
-        }
+        let draftState = {
+            blue_bans: [], blue_picks: [],
+            red_bans: [], red_picks: [],
+            all_selected: [], phase: 'waiting'
+        };
         
         // Подключение к серверу
         socket.on('connect', function() {
             console.log('Подключено к серверу');
             socket.emit('join', { team: myTeam });
-            initUserTeam();
+            showNotification('Подключено к серверу');
         });
         
-        // Получаем список бравлеров от сервера
+        // Получаем список бравлеров
         socket.on('brawlers_list', function(serverBrawlers) {
+            console.log('Получены бравлеры:', serverBrawlers);
             brawlers = serverBrawlers;
-            updateBrawlersCount();
-            renderBrawlersGrid();
+            renderBrawlers();
         });
         
-        // Обработка обновления состояния драфта
+        // Обновление состояния драфта
         socket.on('update_draft', function(data) {
-            updateDraftUI(data);
-            updateBrawlersCount();
-            
-            // Обновляем карточки бравлеров
-            renderBrawlersGrid();
+            console.log('Обновление драфта:', data);
+            draftState = data;
+            updateUI();
         });
         
         // Сброс драфта
         socket.on('draft_reset', function() {
             showNotification('Драфт сброшен!');
-            
-            // Сбрасываем таймер
-            if (resetCountdown) {
-                clearInterval(resetCountdown);
-                resetCountdown = null;
-            }
-            updateTimerDisplay(0);
-            
-            // Сбрасываем поиск
-            document.getElementById('search').value = '';
-            currentFilter = '';
-            
-            // Обновляем UI
-            const emptyState = {
-                blue_bans: [], blue_picks: [],
-                red_bans: [], red_picks: [],
-                all_selected: [], phase: 'waiting',
-                picking_order: ['blue', 'red'], turn_index: 0
-            };
-            updateDraftUI(emptyState);
+            renderBrawlers();
         });
         
-        // Предупреждение о сбросе
-        socket.on('timer_warning', function(data) {
-            showNotification(`Автосброс через ${data.seconds_left} секунд!`);
-        });
-        
-        // Создаем сетку бравлеров
-        function renderBrawlersGrid() {
+        // Рендер бравлеров
+        function renderBrawlers() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
             
-            // Фильтруем и сортируем бравлеров
-            let filteredBrawlers = brawlers.filter(brawler => {
-                return brawler.toLowerCase().includes(currentFilter.toLowerCase());
-            });
-            
-            // Сортируем
-            if (currentSort === 'name') {
-                filteredBrawlers.sort((a, b) => a.localeCompare(b));
-            } else if (currentSort === 'available') {
-                // Сначала доступные, потом выбранные
-                const draftState = getCurrentDraftState();
-                filteredBrawlers.sort((a, b) => {
-                    const aSelected = draftState.all_selected.includes(a);
-                    const bSelected = draftState.all_selected.includes(b);
-                    if (aSelected && !bSelected) return 1;
-                    if (!aSelected && bSelected) return -1;
-                    return a.localeCompare(b);
-                });
-            }
-            
-            // Создаем карточки
-            filteredBrawlers.forEach(name => {
+            brawlers.forEach(name => {
                 const card = document.createElement('div');
                 card.className = 'brawler-card';
                 card.id = 'card-' + name;
                 
                 // Проверяем, выбран ли бравлер
-                const draftState = getCurrentDraftState();
-                const isSelected = draftState.all_selected.includes(name);
-                
-                if (isSelected) {
+                if (draftState.all_selected.includes(name)) {
                     card.classList.add('disabled');
                 }
                 
-                // Создаем содержимое карточки
-                const imgUrl = `/static/brawler_images/${name}.png`;
+                // Создаем карточку
                 card.innerHTML = `
-                    <div class="brawler-img-container">
-                        <img src="${imgUrl}" alt="${name}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><rect width=\"100\" height=\"100\" fill=\"%23222\"/><text x=\"50\" y=\"50\" font-family=\"Arial\" font-size=\"14\" fill=\"white\" text-anchor=\"middle\" dy=\".3em\">${name}</text></svg>'">
-                    </div>
-                    <div class="brawler-name">${name.toUpperCase()}</div>
+                    <img src="/static/brawler_images/${name}.png" alt="${name}" 
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/100/333/fff?text=${name[0]}'">
+                    <div class="brawler-name">${name}</div>
                 `;
                 
                 // Обработчик клика
                 card.onclick = function() {
-                    if (myTeam && !isSelected) {
+                    if (myTeam && !card.classList.contains('disabled')) {
                         socket.emit('select_brawler', {
                             brawler: name,
                             team: myTeam
@@ -784,227 +286,94 @@
                 
                 grid.appendChild(card);
             });
-        }
-        
-        // Фильтрация бравлеров
-        function filterBrawlers() {
-            currentFilter = document.getElementById('search').value;
-            renderBrawlersGrid();
-        }
-        
-        // Сортировка бравлеров
-        function sortBrawlers(sortType) {
-            currentSort = sortType;
-            renderBrawlersGrid();
-        }
-        
-        // Обновление счетчиков бравлеров
-        function updateBrawlersCount() {
-            const draftState = getCurrentDraftState();
-            const total = brawlers.length;
-            const available = total - draftState.all_selected.length;
             
-            document.getElementById('total-count').textContent = total;
-            document.getElementById('available-count').textContent = available;
+            console.log(`Отображено ${brawlers.length} бравлеров`);
         }
         
-        // Обновление UI драфта
-        function updateDraftUI(data) {
-            // Сохраняем состояние для использования в других функциях
-            window.currentDraftState = data;
-            
+        // Обновление UI
+        function updateUI() {
             // Обновляем статус
-            const statusEl = document.getElementById('status');
-            const timerText = document.getElementById('timer-text');
-            
-            switch(data.phase) {
-                case 'waiting':
-                    statusEl.textContent = "ОЖИДАНИЕ СОПЕРНИКА...";
-                    timerText.textContent = "Автосброс: --:--";
-                    break;
-                    
-                case 'ban':
-                    statusEl.textContent = "ФАЗА БАНОВ";
-                    timerText.textContent = "Автосброс: --:--";
-                    break;
-                    
-                case 'pick':
-                    const currentTurn = data.picking_order[data.turn_index];
-                    const turnText = currentTurn === 'blue' ? 'СИНЯЯ КОМАНДА' : 'КРАСНАЯ КОМАНДА';
-                    statusEl.textContent = `ХОД: ${turnText}`;
-                    timerText.textContent = "Автосброс: --:--";
-                    break;
-                    
-                case 'finished':
-                    statusEl.textContent = "ДРАФТ ЗАВЕРШЕН";
-                    
-                    // Запускаем таймер обратного отсчета
-                    startResetCountdown();
-                    break;
+            const status = document.getElementById('status');
+            switch(draftState.phase) {
+                case 'waiting': status.textContent = 'ОЖИДАНИЕ...'; break;
+                case 'ban': status.textContent = 'ФАЗА БАНОВ'; break;
+                case 'pick': status.textContent = 'ФАЗА ВЫБОРА'; break;
+                case 'finished': status.textContent = 'ДРАФТ ЗАВЕРШЕН'; break;
             }
             
-            // Обновляем слоты команд
-            updateTeamSlots('blue', data.blue_bans, data.blue_picks, data.phase, data.picking_order[data.turn_index]);
-            updateTeamSlots('red', data.red_bans, data.red_picks, data.phase, data.picking_order[data.turn_index]);
+            // Обновляем слоты
+            updateSlots('blue', draftState.blue_bans, draftState.blue_picks);
+            updateSlots('red', draftState.red_bans, draftState.red_picks);
+            
+            // Обновляем карточки бравлеров
+            renderBrawlers();
         }
         
         // Обновление слотов команды
-        function updateTeamSlots(team, bans, picks, phase, currentTurn) {
+        function updateSlots(team, bans, picks) {
             const banSlots = document.querySelectorAll(`.${team} .ban-slot`);
             const pickSlots = document.querySelectorAll(`.${team} .pick-slot`);
             
-            // Очищаем слоты
-            banSlots.forEach(slot => {
-                slot.innerHTML = '';
-                slot.style.borderStyle = 'dashed';
-            });
-            
-            pickSlots.forEach(slot => {
-                slot.innerHTML = '';
-                slot.classList.remove('active');
-            });
-            
-            // Заполняем баны
+            // Бан слоты
             bans.forEach((name, i) => {
-                if (name && i < banSlots.length) {
-                    const imgUrl = `/static/brawler_images/${name}.png`;
-                    banSlots[i].innerHTML = `<img src="${imgUrl}" alt="${name}">`;
-                    banSlots[i].style.borderStyle = 'solid';
+                if (i < banSlots.length) {
+                    banSlots[i].innerHTML = name ? 
+                        `<img src="/static/brawler_images/${name}.png" style="width:100%; height:100%; object-fit:cover; filter:grayscale(1)">` : 
+                        '';
                 }
             });
             
-            // Заполняем пики
+            // Пик слоты
             picks.forEach((name, i) => {
-                if (name && i < pickSlots.length) {
-                    const imgUrl = `/static/brawler_images/${name}.png`;
-                    pickSlots[i].innerHTML = `
-                        <img src="${imgUrl}" alt="${name}">
-                        <div class="slot-name">${name.toUpperCase()}</div>
-                    `;
-                    
-                    // Подсвечиваем активный слот
-                    pickSlots[i].classList.toggle('active', 
-                        phase === 'pick' && currentTurn === team && i === picks.length
-                    );
+                if (i < pickSlots.length) {
+                    pickSlots[i].innerHTML = name ? 
+                        `<div style="width:100%; height:100%; display:flex; flex-direction:column;">
+                            <img src="/static/brawler_images/${name}.png" style="flex:1; object-fit:cover;">
+                            <div style="background:rgba(0,0,0,0.8); padding:5px; text-align:center; font-size:12px;">${name}</div>
+                         </div>` : 
+                        '';
                 }
             });
         }
         
-        // Таймер обратного отсчета
-        function startResetCountdown() {
-            if (resetCountdown) {
-                clearInterval(resetCountdown);
-            }
-            
-            let secondsLeft = 60;
-            updateTimerDisplay(secondsLeft);
-            
-            resetCountdown = setInterval(() => {
-                secondsLeft--;
-                updateTimerDisplay(secondsLeft);
-                
-                if (secondsLeft <= 0) {
-                    clearInterval(resetCountdown);
-                    resetCountdown = null;
+        // Поиск бравлеров
+        document.getElementById('search').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            brawlers.forEach(name => {
+                const card = document.getElementById('card-' + name);
+                if (card) {
+                    card.style.display = name.toLowerCase().includes(query) ? 'flex' : 'none';
                 }
-            }, 1000);
-        }
+            });
+        });
         
-        // Обновление отображения таймера
-        function updateTimerDisplay(secondsLeft) {
-            const timerText = document.getElementById('timer-text');
-            
-            if (secondsLeft > 0) {
-                const mins = Math.floor(secondsLeft / 60);
-                const secs = secondsLeft % 60;
-                timerText.textContent = `Автосброс: ${mins}:${secs.toString().padStart(2, '0')}`;
-                
-                // Меняем цвет при малом времени
-                if (secondsLeft <= 10) {
-                    timerText.style.color = '#e74c3c';
-                } else if (secondsLeft <= 30) {
-                    timerText.style.color = '#f39c12';
-                } else {
-                    timerText.style.color = '#3498db';
-                }
-            } else {
-                timerText.textContent = 'Автосброс: --:--';
-                timerText.style.color = '#b0b0b0';
-            }
-        }
-        
-        // Сброс драфта вручную
+        // Сброс драфта
         function resetDraft() {
-            if (confirm('Вы уверены, что хотите сбросить драфт? Все текущие выборы будут потеряны.')) {
+            if (confirm('Сбросить драфт?')) {
                 socket.emit('reset_draft');
             }
         }
         
-        // Показ уведомлений
-        function showNotification(message, type = 'info') {
-            const container = document.getElementById('notification-container');
-            
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            container.appendChild(notification);
-            
-            // Удаляем уведомление через 3 секунды
+        // Показать уведомление
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
             setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
+                notification.style.display = 'none';
             }, 3000);
         }
         
-        // Получение текущего состояния драфта
-        function getCurrentDraftState() {
-            return window.currentDraftState || {
-                blue_bans: [], blue_picks: [],
-                red_bans: [], red_picks: [],
-                all_selected: [], phase: 'waiting',
-                picking_order: ['blue', 'red'], turn_index: 0
-            };
-        }
-        
-        // Инициализация при загрузке
+        // Загрузка при старте
         document.addEventListener('DOMContentLoaded', function() {
-            // Настраиваем поиск
-            const searchInput = document.getElementById('search');
-            searchInput.addEventListener('input', filterBrawlers);
-            searchInput.addEventListener('keyup', function(e) {
-                if (e.key === 'Escape') {
-                    this.value = '';
-                    filterBrawlers();
-                }
-            });
-            
-            // Запрашиваем состояние драфта
-            socket.emit('get_state');
-            
-            // Показываем инструкцию
-            setTimeout(() => {
-                if (myTeam) {
-                    showNotification(`Вы играете за ${myTeam === 'blue' ? 'синюю' : 'красную'} команду. Кликайте на бравлеров для выбора.`);
-                } else {
-                    showNotification('Вы в режиме наблюдателя. Для игры добавьте ?team=blue или ?team=red к URL.');
-                }
-            }, 1000);
-        });
-        
-        // Обработка отключения
-        socket.on('disconnect', function() {
-            showNotification('Соединение с сервером потеряно. Попытка переподключения...', 'error');
-        });
-        
-        socket.on('reconnect', function() {
-            showNotification('Соединение восстановлено!', 'success');
-            socket.emit('join', { team: myTeam });
-            socket.emit('get_state');
+            // Показываем информацию о команде
+            if (myTeam === 'blue') {
+                showNotification('Вы играете за СИНЮЮ команду');
+            } else if (myTeam === 'red') {
+                showNotification('Вы играете за КРАСНУЮ команду');
+            } else {
+                showNotification('Вы наблюдатель');
+            }
         });
     </script>
 </body>
