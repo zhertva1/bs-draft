@@ -331,43 +331,58 @@ def spectator_view():
 
 @app.route('/blue')
 def blue_view():
+    session.clear()  # Очищаем сессию перед установкой новой
     session_id = str(time.time()) + str(random.random())
     session['session_id'] = session_id
     session['role'] = 'blue'
+    session.modified = True  # Убедимся, что сессия сохранена
+    
+    print(f"🔵 Попытка входа синей команды. Сессия ID: {session_id}")
     
     # Проверяем доступ
     if not check_session_access('blue', session_id):
+        print(f"❌ Доступ запрещен для синей команды. Активная сессия: {active_sessions['blue']}")
         return render_template('access_denied.html', 
                              message="Синяя команда уже занята другим игроком. Дождитесь, пока текущий игрок выйдет.",
                              role='spectator'), 403
     
+    print(f"✅ Доступ разрешен для синей команды")
     return render_template('index.html', role='blue')
 
 @app.route('/red')
 def red_view():
+    session.clear()  # Очищаем сессию перед установкой новой
     session_id = str(time.time()) + str(random.random())
     session['session_id'] = session_id
     session['role'] = 'red'
+    session.modified = True
+    
+    print(f"🔴 Попытка входа красной команды. Сессия ID: {session_id}")
     
     # Проверяем доступ
     if not check_session_access('red', session_id):
+        print(f"❌ Доступ запрещен для красной команды. Активная сессия: {active_sessions['red']}")
         return render_template('access_denied.html',
                              message="Красная команда уже занята другим игроком. Дождитесь, пока текущий игрок выйдет.",
                              role='spectator'), 403
     
+    print(f"✅ Доступ разрешен для красной команды")
     return render_template('index.html', role='red')
 
 @app.route('/admin/<token>')
 def admin_view(token):
     if token == ADMIN_TOKEN:
+        session.clear()
         session_id = str(time.time()) + str(random.random())
         session['session_id'] = session_id
         session['admin_token'] = ADMIN_TOKEN
         session['role'] = 'admin'
+        session.modified = True
         
         # Регистрируем админ-сессию
         check_session_access('admin', session_id)
         
+        print(f"👑 Админ вошел. Сессия ID: {session_id}")
         return render_template('index.html', role='admin')
     else:
         return render_template('access_denied.html',
@@ -382,6 +397,7 @@ def logout():
     
     if role and session_id:
         release_session(role, session_id)
+        print(f"🚪 Выход: {role}, сессия: {session_id}")
     
     session.clear()
     return render_template('logout.html')
@@ -392,9 +408,12 @@ def get_state():
     role = request.args.get('role', 'spectator')
     session_id = session.get('session_id', '')
     
+    print(f"📊 Запрос состояния для роли: {role}, сессия: {session_id}")
+    
     # Проверяем доступ для командных ролей
     if role in ['blue', 'red', 'admin']:
         if not check_session_access(role, session_id):
+            print(f"❌ Доступ запрещен для {role}")
             return jsonify({
                 'success': False,
                 'error': 'Доступ занят другим игроком',
@@ -619,7 +638,9 @@ def test_page():
         'brawlers': len(BRWLERS),
         'maps': {mode: len(maps) for mode, maps in MAPS_BY_MODE.items()},
         'admin_url': f'/admin/{ADMIN_TOKEN}',
-        'active_sessions': active_sessions
+        'active_sessions': active_sessions,
+        'current_session': session.get('session_id'),
+        'current_role': session.get('role')
     })
 
 # Фавикон
