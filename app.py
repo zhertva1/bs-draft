@@ -4,20 +4,43 @@ import time
 import threading
 from flask import Flask, render_template, send_from_directory, jsonify
 from flask_socketio import SocketIO, emit
-from datetime import datetime
+from flask_cors import CORS
 
-# Инициализация Flask и SocketIO
-app = Flask(__name__)
+# Инициализация Flask
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.config['SECRET_KEY'] = os.urandom(24)
+CORS(app)  # Разрешаем CORS для всех доменов
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 # Конфигурация
-IMAGE_FOLDER = 'static/brawler_images'
+IMAGE_FOLDER = os.path.join(app.static_folder, 'brawler_images')
 RESET_TIMEOUT = 60  # 1 минута в секундах
+
+# Получаем список бравлеров из папки
+def get_brawlers_list():
+    if not os.path.exists(IMAGE_FOLDER):
+        print(f"⚠️ Папка '{IMAGE_FOLDER}' не найдена!")
+        return []
+    
+    brawlers = []
+    for filename in os.listdir(IMAGE_FOLDER):
+        # Принимаем разные расширения изображений
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+            name = os.path.splitext(filename)[0]  # Убираем расширение
+            brawlers.append(name)
+    
+    print(f"✅ Найдено бравлеров: {len(brawlers)}")
+    return sorted(brawlers, key=lambda x: x.lower())
+
+BRWLERS = get_brawlers_list()
+print(f"📋 Список бравлеров: {BRWLERS[:5]}...")
 
 # Глобальное состояние драфта
 class DraftState:
     def __init__(self):
+        self.reset()
+    
+    def reset(self):
         self.blue_bans = []
         self.blue_picks = []
         self.red_bans = []
@@ -27,20 +50,7 @@ class DraftState:
         self.picking_order = ['blue', 'red']
         self.turn_index = 0
         self.last_action_time = None
-        self.timer_active = False
         self.lock = threading.Lock()
-    
-    def reset(self):
-        with self.lock:
-            self.blue_bans = []
-            self.blue_picks = []
-            self.red_bans = []
-            self.red_picks = []
-            self.all_selected = []
-            self.phase = 'waiting'
-            self.turn_index = 0
-            self.last_action_time = None
-            self.timer_active = False
     
     def get_state(self):
         with self.lock:
@@ -52,53 +62,24 @@ class DraftState:
                 'all_selected': self.all_selected,
                 'phase': self.phase,
                 'picking_order': self.picking_order,
-                'turn_index': self.turn_index,
-                'timer_active': self.timer_active
+                'turn_index': self.turn_index
             }
 
 draft_state = DraftState()
 
-# Получаем список бравлеров из папки
-def get_brawlers_list():
-    if not os.path.exists(IMAGE_FOLDER):
-        print(f"Папка '{IMAGE_FOLDER}' не найдена!")
-        return []
-    
-    brawlers = []
-    valid_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp')
-    
-    for filename in os.listdir(IMAGE_FOLDER):
-        if filename.lower().endswith(valid_extensions):
-            # Убираем расширение файла
-            name = os.path.splitext(filename)[0]
-            brawlers.append(name)
-    
-    print(f"Найдено бравлеров: {len(brawlers)}")
-    return sorted(brawlers, key=lambda x: x.lower())
-
-BRWLERS = get_brawlers_list()
-
 # Функция для проверки и сброса таймера
 def check_reset_timer():
     while True:
-        time.sleep(1)
+        time.sleep(5)  # Проверяем каждые 5 секунд
         
         if draft_state.phase == 'finished' and draft_state.last_action_time:
             elapsed = time.time() - draft_state.last_action_time
             
-            if elapsed >= RESET_TIMEOUT and not draft_state.timer_active:
-                with draft_state.lock:
-                    draft_state.timer_active = True
-                
-                print(f"Автоматический сброс драфта через {RESET_TIMEOUT} секунд")
-                socketio.emit('timer_warning', {'seconds_left': 5})
-                time.sleep(5)
-                
+            if elapsed >= RESET_TIMEOUT:
+                print("⏰ Автоматический сброс драфта через 1 минуту")
                 draft_state.reset()
                 socketio.emit('draft_reset')
                 socketio.emit('update_draft', draft_state.get_state())
-                
-                print("Драфт сброшен автоматически")
 
 # Запускаем таймер в отдельном потоке
 timer_thread = threading.Thread(target=check_reset_timer, daemon=True)
@@ -108,32 +89,24 @@ timer_thread.start()
 def index():
     return render_template('index.html')
 
-@app.route('/brawlers')
-def get_brawlers():
+@app.route('/api/brawlers')
+def api_brawlers():
     return jsonify(BRWLERS)
 
-@app.route('/draft-state')
-def get_draft_state():
+@app.route('/api/draft-state')
+def api_draft_state():
     return jsonify(draft_state.get_state())
-
-@app.route('/static/brawler_images/<path:filename>')
-def serve_image(filename):
-    return send_from_directory(IMAGE_FOLDER, filename)
 
 @socketio.on('connect')
 def handle_connect():
-    print(f'Клиент подключился: {request.sid}')
+    print('🔌 Клиент подключился')
     emit('brawlers_list', BRWLERS)
     emit('update_draft', draft_state.get_state())
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    print(f'Клиент отключился: {request.sid}')
 
 @socketio.on('join')
 def handle_join(data):
     team = data.get('team', 'spectator')
-    print(f'Игрок присоединился к команде: {team}')
+    print(f'👤 Игрок присоединился к команде: {team}')
     emit('update_draft', draft_state.get_state())
 
 @socketio.on('select_brawler')
@@ -142,15 +115,16 @@ def handle_select(data):
     team = data.get('team', '')
     
     if not brawler or not team or team not in ['blue', 'red']:
+        print(f"❌ Неверные данные: brawler={brawler}, team={team}")
         return
     
     if brawler not in BRWLERS:
-        print(f"Бравлер {brawler} не найден в списке")
+        print(f"❌ Бравлер {brawler} не найден в списке")
         return
     
     with draft_state.lock:
         if brawler in draft_state.all_selected:
-            print(f"Бравлер {brawler} уже выбран")
+            print(f"⚠️ Бравлер {brawler} уже выбран")
             return
         
         # Определяем, бан это или пик
@@ -161,7 +135,7 @@ def handle_select(data):
             elif len(draft_state.blue_picks) < 3:
                 draft_state.blue_picks.append(brawler)
                 draft_state.phase = 'pick'
-        elif team == 'red':
+        else:  # red
             if len(draft_state.red_bans) < 3:
                 draft_state.red_bans.append(brawler)
                 draft_state.phase = 'ban'
@@ -177,15 +151,13 @@ def handle_select(data):
             len(draft_state.red_picks) == 3):
             draft_state.phase = 'finished'
             draft_state.last_action_time = time.time()
-            draft_state.timer_active = False
     
-    # Отправляем обновление всем клиентам
+    print(f"✅ Выбран бравлер: {brawler} для команды {team}")
     socketio.emit('update_draft', draft_state.get_state())
-    print(f"Выбран бравлер: {brawler} для команды {team}")
 
 @socketio.on('reset_draft')
 def handle_reset():
-    print("Ручной сброс драфта")
+    print("🔄 Ручной сброс драфта")
     draft_state.reset()
     socketio.emit('draft_reset')
     socketio.emit('update_draft', draft_state.get_state())
@@ -196,6 +168,10 @@ def handle_get_state():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    print(f"Сервер запущен. Доступно бравлеров: {len(BRWLERS)}")
-    print(f"Сервер доступен по адресу: http://localhost:{port}")
+    print(f"🚀 Сервер запущен на порту {port}")
+    print(f"📊 Доступно бравлеров: {len(BRWLERS)}")
+    print(f"🌐 Ссылки для доступа:")
+    print(f"   Синяя команда: http://localhost:{port}/?team=blue")
+    print(f"   Красная команда: http://localhost:{port}/?team=red")
+    print(f"   Наблюдатель: http://localhost:{port}/")
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
