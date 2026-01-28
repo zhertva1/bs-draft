@@ -30,9 +30,6 @@
             flex: 1; 
             padding: 20px; 
             gap: 20px; 
-            max-width: 1600px;
-            margin: 0 auto;
-            width: 100%;
         }
         
         .side { 
@@ -121,7 +118,6 @@
             border-radius: 10px;
             position: relative;
             overflow: hidden;
-            margin: 0 auto;
         }
         
         .pick-slot.active {
@@ -171,14 +167,13 @@
             color: white;
             font-size: 16px;
             border-radius: 8px;
-            width: 100%;
         }
         
         .grid {
             flex: 1;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 12px;
+            gap: 10px;
             overflow-y: auto;
             padding: 10px;
         }
@@ -229,7 +224,6 @@
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin-top: 20px;
         }
         
         .btn {
@@ -304,9 +298,7 @@
         <!-- Центр -->
         <div class="center">
             <input type="text" id="search" placeholder="Поиск бравлера..." autocomplete="off">
-            <div class="grid" id="grid">
-                <!-- Бравлеры загружаются динамически -->
-            </div>
+            <div class="grid" id="grid"></div>
             
             <div class="controls">
                 <button class="btn start-btn" onclick="startDraft()">НАЧАТЬ ДРАФТ</button>
@@ -367,7 +359,7 @@
                 startResetTimer();
             } else {
                 if (resetTimer) {
-                    clearInterval(resetTimer);
+                    clearTimeout(resetTimer);
                     resetTimer = null;
                 }
             }
@@ -376,16 +368,12 @@
         socket.on('draft_reset', () => {
             showNotification('Драфт сброшен!');
             if (resetTimer) {
-                clearInterval(resetTimer);
+                clearTimeout(resetTimer);
                 resetTimer = null;
             }
         });
         
         function startDraft() {
-            if (myTeam === 'spectator') {
-                showNotification('Только игроки могут начать драфт');
-                return;
-            }
             socket.emit('start_draft');
         }
         
@@ -408,8 +396,7 @@
                 
                 const imgUrl = `/static/brawler_images/${brawler}.png`;
                 card.innerHTML = `
-                    <img src="${imgUrl}" alt="${brawler}" 
-                         onerror="this.onerror=null; this.style.backgroundColor='#333';">
+                    <img src="${imgUrl}" alt="${brawler}">
                     <div class="brawler-name">${brawler}</div>
                 `;
                 
@@ -518,18 +505,23 @@
         }
         
         function startResetTimer() {
-            let seconds = 60;
-            updateTimerDisplay(seconds);
+            if (resetTimer) clearTimeout(resetTimer);
             
-            if (resetTimer) clearInterval(resetTimer);
+            // Запускаем таймер на 60 секунд
+            resetTimer = setTimeout(() => {
+                socket.emit('reset_draft');
+            }, 60000); // 60 секунд
             
-            resetTimer = setInterval(() => {
-                seconds--;
-                updateTimerDisplay(seconds);
+            // Показываем обратный отсчет
+            let secondsLeft = 60;
+            updateTimerDisplay(secondsLeft);
+            
+            const countdown = setInterval(() => {
+                secondsLeft--;
+                updateTimerDisplay(secondsLeft);
                 
-                if (seconds <= 0) {
-                    clearInterval(resetTimer);
-                    resetTimer = null;
+                if (secondsLeft <= 0) {
+                    clearInterval(countdown);
                 }
             }, 1000);
         }
@@ -537,9 +529,7 @@
         function updateTimerDisplay(seconds) {
             const status = document.getElementById('status');
             if (draftState.phase === 'finished') {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                status.textContent = `ДРАФТ ЗАВЕРШЕН (сброс через ${mins}:${secs.toString().padStart(2, '0')})`;
+                status.textContent = `ДРАФТ ЗАВЕРШЕН (сброс через ${seconds} сек)`;
             }
         }
         
@@ -562,17 +552,6 @@
                     card.style.display = brawler.toLowerCase().includes(query) ? 'flex' : 'none';
                 }
             });
-        });
-        
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            if (myTeam === 'blue') {
-                showNotification('Вы играете за синюю команду');
-            } else if (myTeam === 'red') {
-                showNotification('Вы играете за красную команду');
-            } else {
-                showNotification('Вы наблюдатель');
-            }
         });
     </script>
 </body>
