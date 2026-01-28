@@ -63,8 +63,12 @@ MAPS_BY_MODE = get_maps_by_mode()
 
 # Глобальное состояние драфта
 draft_states = {}
-# Таймеры для каждого состояния
-timers = {}
+# Активные сессии по командам
+active_sessions = {
+    'blue': None,
+    'red': None,
+    'admin': None
+}
 # Блокировка для потокобезопасности
 state_lock = threading.Lock()
 
@@ -89,18 +93,38 @@ def get_or_create_state():
                 'red_ready': False,
                 'selected_map': None,
                 'selected_mode': None,
-                'ban_timer': None,
-                'pick_timer': None,
                 'ban_end_time': None,
                 'pick_end_time': None,
                 'phase_start_time': None
             }
-            timers['main'] = {
-                'ban_timer': None,
-                'pick_timer': None
-            }
         
         return 'main', draft_states['main']
+
+def check_session_access(role, session_id):
+    """Проверяет доступность сессии для роли"""
+    with state_lock:
+        # Админ и наблюдатель всегда имеют доступ
+        if role in ['admin', 'spectator']:
+            return True
+        
+        # Если для этой роли нет активной сессии, разрешаем доступ
+        if active_sessions[role] is None:
+            active_sessions[role] = session_id
+            return True
+        
+        # Если сессия совпадает с активной, разрешаем доступ
+        if active_sessions[role] == session_id:
+            return True
+        
+        # Иначе доступ запрещен
+        return False
+
+def release_session(role, session_id):
+    """Освобождает сессию для роли"""
+    with state_lock:
+        if active_sessions[role] == session_id:
+            active_sessions[role] = None
+            print(f"🔓 Сессия освобождена: {role}")
 
 def check_auto_reset(state):
     """Проверяет, нужно ли сбросить драфт"""
@@ -205,6 +229,8 @@ def update_state(state, team, brawler, action_type):
             state['all_selected'].append(brawler)
             state['last_action'] = time.time()
             
+            print(f"✅ {team} забанил бравлера: {brawler}")
+            
             # Проверяем, завершены ли все баны
             blue_bans_done = len(state['blue_bans']) == 3
             red_bans_done = len(state['red_bans']) == 3
@@ -297,28 +323,84 @@ def admin_required(f):
 # ========== РОЛИ ==========
 @app.route('/')
 def spectator_view():
+    # Сбрасываем сессию наблюдателя при каждом входе
+    session.clear()
+    session['role'] = 'spectator'
+    session['session_id'] = str(time.time()) + str(random.random())
     return render_template('index.html', role='spectator')
 
 @app.route('/blue')
 def blue_view():
+    session_id = str(time.time()) + str(random.random())
+    session['session_id'] = session_id
+    session['role'] = 'blue'
+    
+    # Проверяем доступ
+    if not check_session_access('blue', session_id):
+        return render_template('access_denied.html', 
+                             message="Синяя команда уже занята другим игроком. Дождитесь, пока текущий игрок выйдет.",
+                             role='spectator'), 403
+    
     return render_template('index.html', role='blue')
 
 @app.route('/red')
 def red_view():
+    session_id = str(time.time()) + str(random.random())
+    session['session_id'] = session_id
+    session['role'] = 'red'
+    
+    # Проверяем доступ
+    if not check_session_access('red', session_id):
+        return render_template('access_denied.html',
+                             message="Красная команда уже занята другим игроком. Дождитесь, пока текущий игрок выйдет.",
+                             role='spectator'), 403
+    
     return render_template('index.html', role='red')
 
 @app.route('/admin/<token>')
 def admin_view(token):
     if token == ADMIN_TOKEN:
+        session_id = str(time.time()) + str(random.random())
+        session['session_id'] = session_id
         session['admin_token'] = ADMIN_TOKEN
+        session['role'] = 'admin'
+        
+        # Регистрируем админ-сессию
+        check_session_access('admin', session_id)
+        
         return render_template('index.html', role='admin')
     else:
-        return f"Неверная ссылка. Используйте: /admin/{ADMIN_TOKEN}", 404
+        return render_template('access_denied.html',
+                             message="Неверная админ-ссылка",
+                             role='spectator'), 404
+
+# Страница выхода
+@app.route('/logout')
+def logout():
+    role = session.get('role')
+    session_id = session.get('session_id')
+    
+    if role and session_id:
+        release_session(role, session_id)
+    
+    session.clear()
+    return render_template('logout.html')
 
 # ========== API МАРШРУТЫ ==========
 @app.route('/api/state')
 def get_state():
     role = request.args.get('role', 'spectator')
+    session_id = session.get('session_id', '')
+    
+    # Проверяем доступ для командных ролей
+    if role in ['blue', 'red', 'admin']:
+        if not check_session_access(role, session_id):
+            return jsonify({
+                'success': False,
+                'error': 'Доступ занят другим игроком',
+                'redirect': '/logout'
+            }), 403
+    
     room_id, state = get_or_create_state()
     
     # Проверяем автосброс
@@ -343,16 +425,22 @@ def get_state():
         'state': get_client_state(state, role if role in ['blue', 'red'] else 'spectator'),
         'brawlers': BRWLERS,
         'role': role,
-        'maps': MAPS_BY_MODE
+        'maps': MAPS_BY_MODE,
+        'session_id': session_id
     })
 
 @app.route('/api/ready', methods=['POST'])
 def set_ready():
     data = request.json
     role = data.get('role', '')
+    session_id = session.get('session_id', '')
     
     if role not in ['blue', 'red']:
         return jsonify({'success': False, 'error': 'Неверная роль'})
+    
+    # Проверяем доступ
+    if not check_session_access(role, session_id):
+        return jsonify({'success': False, 'error': 'Доступ занят другим игроком', 'redirect': '/logout'}), 403
     
     room_id, state = get_or_create_state()
     
@@ -382,9 +470,14 @@ def select_brawler():
     data = request.json
     brawler = data.get('brawler', '').strip()
     role = data.get('role', '')
+    session_id = session.get('session_id', '')
     
     if not brawler or not role or role not in ['blue', 'red']:
         return jsonify({'success': False, 'error': 'Неверные данные'})
+    
+    # Проверяем доступ
+    if not check_session_access(role, session_id):
+        return jsonify({'success': False, 'error': 'Доступ занят другим игроком', 'redirect': '/logout'}), 403
     
     if brawler not in BRWLERS:
         return jsonify({'success': False, 'error': 'Бравлер не найден'})
@@ -438,8 +531,6 @@ def reset_state():
             'red_ready': False,
             'selected_map': None,
             'selected_mode': None,
-            'ban_timer': None,
-            'pick_timer': None,
             'ban_end_time': None,
             'pick_end_time': None,
             'phase_start_time': None
@@ -487,6 +578,34 @@ def select_map():
         'message': f'Карта {map_name} выбрана!'
     })
 
+# API для проверки состояния сессии
+@app.route('/api/check_session')
+def check_session():
+    role = request.args.get('role', '')
+    session_id = session.get('session_id', '')
+    
+    if role in ['blue', 'red', 'admin']:
+        if not check_session_access(role, session_id):
+            return jsonify({
+                'success': False,
+                'error': 'Доступ занят',
+                'redirect': '/logout'
+            })
+    
+    return jsonify({'success': True})
+
+# API для освобождения сессии
+@app.route('/api/release_session', methods=['POST'])
+def release_session_api():
+    data = request.json
+    role = data.get('role', '')
+    session_id = session.get('session_id', '')
+    
+    if role and session_id:
+        release_session(role, session_id)
+    
+    return jsonify({'success': True})
+
 # Статические файлы
 @app.route('/static/<path:filename>')
 def serve_static(filename):
@@ -499,7 +618,8 @@ def test_page():
         'status': 'online',
         'brawlers': len(BRWLERS),
         'maps': {mode: len(maps) for mode, maps in MAPS_BY_MODE.items()},
-        'admin_url': f'/admin/{ADMIN_TOKEN}'
+        'admin_url': f'/admin/{ADMIN_TOKEN}',
+        'active_sessions': active_sessions
     })
 
 # Фавикон
@@ -516,6 +636,7 @@ if __name__ == '__main__':
     print(f"🔵 Синяя команда: http://localhost:{port}/blue")
     print(f"🔴 Красная команда: http://localhost:{port}/red")
     print(f"⚡ Администратор: http://localhost:{port}/admin/{ADMIN_TOKEN}")
+    print(f"🚪 Выход: http://localhost:{port}/logout")
     print(f"📊 Тестовая страница: http://localhost:{port}/test")
     print("="*50)
     print(f"✅ Всего бравлеров: {len(BRWLERS)}")
@@ -527,6 +648,7 @@ if __name__ == '__main__':
         print("⚠️  Карты не загружены! Создайте папки в static/mappool/")
     print("="*50)
     print("⏰ Таймеры: 40 секунд на баны, 40 секунд на каждый пик")
+    print("🔒 Безопасность: Один игрок на команду, автоматическая блокировка")
     print("="*50 + "\n")
     
     app.run(host='0.0.0.0', port=port, debug=False)
