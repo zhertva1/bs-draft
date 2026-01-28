@@ -2,3 +2,6 @@ flask
 flask-socketio
 eventlet
 gunicorn
+os
+pygame
+random
