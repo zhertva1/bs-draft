@@ -15,14 +15,14 @@ IMAGE_FOLDER = os.path.join(app.static_folder, 'brawler_images')
 MAPPOOL_FOLDER = os.path.join(app.static_folder, 'mappool')
 MODES_FOLDER = os.path.join(app.static_folder, 'modes')
 
-# Глобальное состояние драфта (в продакшене используйте Redis или базу данных)
+# Глобальное состояние драфта
 draft_state = {
     'blue_bans': [],
     'red_bans': [],
     'blue_picks': [],
     'red_picks': [],
     'all_selected': [],
-    'phase': 'waiting',  # waiting, ban_blue, ban_red, pick, finished
+    'phase': 'waiting',
     'current_turn': None,
     'picking_team': None,
     'pick_order': [],
@@ -32,11 +32,10 @@ draft_state = {
     'selected_map': None,
     'selected_mode': None,
     'start_time': None,
-    'finished_at': None,
-    'admin_connected': False
+    'finished_at': None
 }
 
-# Блокировка для потокобезопасности (в продакшене используйте более надежное решение)
+# Блокировка для потокобезопасности
 import threading
 state_lock = threading.Lock()
 
@@ -55,26 +54,47 @@ def get_brawlers_list():
 
 def get_maps_list():
     """Получаем список всех карт из mappool"""
-    maps = {}
+    maps_by_mode = {}
     
     if os.path.exists(MAPPOOL_FOLDER):
-        for mode_folder in os.listdir(MAPPOOL_FOLDER):
-            mode_path = os.path.join(MAPPOOL_FOLDER, mode_folder)
-            if os.path.isdir(mode_path):
+        # Создаем папки режимов если их нет
+        modes = ['Heist', 'Gem_Grab', 'Brawlball', 'Bounty', 'Hot_Zone', 'Knockout']
+        for mode in modes:
+            mode_path = os.path.join(MAPPOOL_FOLDER, mode)
+            if os.path.exists(mode_path):
                 mode_maps = []
                 for map_file in os.listdir(mode_path):
                     if map_file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
                         map_name = os.path.splitext(map_file)[0]
+                        map_name_formatted = map_name.replace('_', ' ').title()
                         mode_maps.append({
-                            'name': map_name,
+                            'name': map_name_formatted,
                             'filename': map_file,
-                            'mode': mode_folder
+                            'mode': mode,
+                            'path': f'/static/mappool/{mode}/{map_file}'
                         })
                 
                 if mode_maps:
-                    maps[mode_folder] = sorted(mode_maps, key=lambda x: x['name'])
+                    maps_by_mode[mode] = sorted(mode_maps, key=lambda x: x['name'])
+            else:
+                print(f"⚠️ Папка режима не найдена: {mode_path}")
+                # Создаем примерные карты для демо
+                maps_by_mode[mode] = [
+                    {
+                        'name': f'{mode} Map 1',
+                        'filename': 'placeholder.png',
+                        'mode': mode,
+                        'path': '/static/placeholder.png'
+                    },
+                    {
+                        'name': f'{mode} Map 2', 
+                        'filename': 'placeholder.png',
+                        'mode': mode,
+                        'path': '/static/placeholder.png'
+                    }
+                ]
     
-    return maps
+    return maps_by_mode
 
 def get_modes_list():
     """Получаем список режимов"""
@@ -86,14 +106,28 @@ def get_modes_list():
                 mode_name = os.path.splitext(mode_file)[0]
                 modes.append({
                     'name': mode_name,
-                    'filename': mode_file
+                    'filename': mode_file,
+                    'path': f'/static/modes/{mode_file}'
                 })
+    else:
+        # Создаем примерные режимы
+        mode_names = ['Heist', 'Gem_Grab', 'Brawlball', 'Bounty', 'Hot_Zone', 'Knockout']
+        for mode_name in mode_names:
+            modes.append({
+                'name': mode_name,
+                'filename': f'{mode_name}.png',
+                'path': f'/static/placeholder.png'
+            })
     
     return sorted(modes, key=lambda x: x['name'])
 
 BRWLERS = get_brawlers_list()
 MAPS = get_maps_list()
 MODES = get_modes_list()
+
+print(f"✅ Найдено бравлеров: {len(BRWLERS)}")
+print(f"✅ Режимов карт: {len(MAPS)}")
+print(f"✅ Иконок режимов: {len(MODES)}")
 
 def reset_draft_state():
     """Сброс состояния драфта"""
@@ -157,6 +191,17 @@ def get_client_state(team=None):
         
         return client_state
 
+# Создаем placeholder изображение если нужно
+@app.before_request
+def create_placeholder():
+    placeholder_path = os.path.join(app.static_folder, 'placeholder.png')
+    if not os.path.exists(placeholder_path):
+        from PIL import Image, ImageDraw
+        img = Image.new('RGB', (400, 225), color=(40, 40, 60))
+        draw = ImageDraw.Draw(img)
+        draw.text((200, 112), "MAP IMAGE", fill=(200, 200, 200), anchor="mm")
+        img.save(placeholder_path)
+
 @app.route('/')
 def index():
     """Главная страница"""
@@ -187,6 +232,8 @@ def set_ready():
         else:
             draft_state['red_ready'] = True
         
+        print(f"✅ Команда {team} готова. Blue: {draft_state['blue_ready']}, Red: {draft_state['red_ready']}")
+        
         # Если обе команды готовы и карта выбрана, начинаем драфт
         if (draft_state['blue_ready'] and 
             draft_state['red_ready'] and 
@@ -196,6 +243,7 @@ def set_ready():
             draft_state['phase'] = 'ban_blue'
             draft_state['current_turn'] = 'blue'
             draft_state['start_time'] = time.time()
+            print("🚀 Драфт начался! Фаза: ban_blue")
     
     return jsonify({'success': True, 'state': get_client_state(team)})
 
@@ -213,6 +261,8 @@ def set_unready():
             draft_state['blue_ready'] = False
         else:
             draft_state['red_ready'] = False
+        
+        print(f"❌ Команда {team} не готова. Blue: {draft_state['blue_ready']}, Red: {draft_state['red_ready']}")
         
         # Если драфт еще не начался, сбрасываем все
         if draft_state['phase'] == 'waiting':
@@ -233,22 +283,28 @@ def select_map():
     
     # Проверяем существование карты
     map_found = False
+    map_info = None
+    
     if map_mode in MAPS:
-        for map_info in MAPS[map_mode]:
-            if map_info['name'] == map_name:
+        for m in MAPS[map_mode]:
+            if m['name'] == map_name:
                 map_found = True
+                map_info = m
                 break
     
     if not map_found:
-        return jsonify({'success': False, 'error': 'Map not found'})
-    
-    with state_lock:
-        draft_state['selected_map'] = {
+        # Создаем фиктивную карту для демо
+        map_info = {
             'name': map_name,
             'mode': map_mode,
-            'filename': f"{map_name}.png"
+            'filename': 'placeholder.png',
+            'path': '/static/placeholder.png'
         }
+    
+    with state_lock:
+        draft_state['selected_map'] = map_info
         draft_state['selected_mode'] = map_mode
+        print(f"🗺️ Карта выбрана: {map_name} ({map_mode})")
     
     return jsonify({'success': True, 'state': get_client_state()})
 
@@ -315,6 +371,7 @@ def select_brawler():
                 draft_state['phase'] = 'pick'
                 draft_state['current_turn'] = draft_state['pick_order'][0]
                 draft_state['current_pick_index'] = 0
+                print(f"🎲 Первый пик у команды: {draft_state['picking_team']}")
             
             elif draft_state['phase'] == 'ban_blue' and blue_bans_done:
                 draft_state['phase'] = 'ban_red'
@@ -347,6 +404,7 @@ def select_brawler():
             if len(draft_state['blue_picks']) == 3 and len(draft_state['red_picks']) == 3:
                 draft_state['phase'] = 'finished'
                 draft_state['finished_at'] = time.time()
+                print("🏁 Драфт завершен!")
             elif draft_state['current_pick_index'] < len(draft_state['pick_order']):
                 draft_state['current_turn'] = draft_state['pick_order'][draft_state['current_pick_index']]
             else:
@@ -366,6 +424,7 @@ def reset_draft():
         return jsonify({'success': False, 'error': 'Access denied'})
     
     reset_draft_state()
+    print("🔄 Драфт сброшен администратором")
     
     return jsonify({'success': True, 'state': get_client_state()})
 
@@ -381,6 +440,15 @@ def get_state():
         'success': True,
         'state': get_client_state(team),
         'brawlers': BRWLERS,
+        'maps': MAPS,
+        'modes': MODES
+    })
+
+@app.route('/api/maps')
+def get_all_maps():
+    """Получение всех карт для админа"""
+    return jsonify({
+        'success': True,
         'maps': MAPS,
         'modes': MODES
     })
