@@ -32,11 +32,415 @@
             letter-spacing: 1px;
         }
         
+        .draft-container {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .team-side {
+            width: 380px;
+            background: #222; 
+            padding: 25px; 
+            border-radius: 15px;
+            border: 4px solid;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .team-blue { border-color: #3498db; }
+        .team-red { border-color: #e74c3c; }
+        
+        .team-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            border-bottom: 3px solid;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .team-blue .team-header { 
+            color: #3498db; 
+            border-color: #3498db;
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        .team-red .team-header { 
+            color: #e74c3c; 
+            border-color: #e74c3c;
+            text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+        
+        .section {
+            margin-bottom: 35px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            color: #ccc;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .bans-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .ban-slot {
+            width: 90px;
+            height: 90px;
+            background: #444;
+            border: 3px dashed #666;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #666;
+            font-weight: bold;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+        
+        .ban-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(1) brightness(0.6);
+        }
+        
+        .ban-slot.filled {
+            border-style: solid;
+            border-color: #e74c3c;
+            background: #333;
+        }
+        
+        .picks-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            align-items: center;
+        }
+        
+        .pick-slot {
+            width: 220px;
+            height: 220px;
+            background: #444;
+            border: 5px solid #666;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .pick-slot.active {
+            border-color: #2ecc71;
+            box-shadow: 0 0 25px rgba(46, 204, 113, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 25px rgba(46, 204, 113, 0.7); }
+            50% { box-shadow: 0 0 35px rgba(46, 204, 113, 1); }
+        }
+        
+        .pick-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .slot-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.85);
+            padding: 10px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-top: 2px solid #444;
+        }
+        
+        .center-panel {
+            flex: 1;
+            background: #222;
+            padding: 25px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .search-box {
+            padding: 18px;
+            background: #333;
+            border: 2px solid #444;
+            color: white;
+            font-size: 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        
+        .brawlers-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            max-height: 550px;
+            margin-bottom: 20px;
+        }
+        
+        .brawler-card {
+            width: 110px;
+            height: 110px;
+            background: #333;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+        
+        .brawler-card:hover {
+            transform: scale(1.08);
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .brawler-card.disabled {
+            opacity: 0.3;
+            filter: grayscale(1);
+            cursor: not-allowed;
+            transform: none !important;
+            border-color: transparent !important;
+        }
+        
+        .brawler-card img {
+            width: 100%;
+            height: 80px;
+            object-fit: contain;
+            padding: 8px;
+            background: #2a2a2a;
+        }
+        
+        .brawler-name {
+            height: 30px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 200px;
+        }
+        
+        .btn-ready {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn-select {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-logout {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            min-width: auto;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 18px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s, fadeOut 0.3s 2.7s forwards;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-left: 5px solid #2ecc71;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+        
+        .timer {
+            font-size: 20px;
+            color: #f39c12;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            border: 2px solid #f39c12;
+        }
+        
+        .timer.warning {
+            color: #e74c3c;
+            border-color: #e74c3c;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .role-info {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .role-blue { 
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.2), rgba(41, 128, 185, 0.2)); 
+            color: #3498db;
+            border: 2px solid #3498db;
+        }
+        .role-red { 
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.2)); 
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+        .role-spectator { 
+            background: linear-gradient(135deg, rgba(149, 165, 166, 0.2), rgba(127, 140, 141, 0.2)); 
+            color: #95a5a6;
+            border: 2px solid #95a5a6;
+        }
+        .role-admin { 
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.2)); 
+            color: #9b59b6;
+            border: 2px solid #9b59b6;
+        }
+        
+        .ready-status {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+        }
+        
+        .status-blue { 
+            color: #3498db;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        .status-red { 
+            color: #e74c3c;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        .status-ready { 
+            color: #2ecc71 !important;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+        }
+        .status-waiting { 
+            color: #f39c12 !important;
+        }
+        
+        /* Секция карты ПОД выбором бойцов */
         .map-section {
             background: #222;
             padding: 20px;
             border-radius: 15px;
-            margin-bottom: 25px;
+            margin-top: 25px;
             text-align: center;
             border: 2px solid #444;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
@@ -193,390 +597,6 @@
             background: #2a2a2a;
         }
         
-        .draft-container {
-            display: flex;
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-        
-        .team-side {
-            width: 380px;
-            background: #222; 
-            padding: 25px; 
-            border-radius: 15px;
-            border: 4px solid;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .team-blue { border-color: #3498db; }
-        .team-red { border-color: #e74c3c; }
-        
-        .team-header {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-            border-bottom: 3px solid;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .team-blue .team-header { 
-            color: #3498db; 
-            border-color: #3498db;
-            text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
-        }
-        .team-red .team-header { 
-            color: #e74c3c; 
-            border-color: #e74c3c;
-            text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
-        }
-        
-        .section {
-            margin-bottom: 35px;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            color: #ccc;
-            margin-bottom: 20px;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .bans-row {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .ban-slot {
-            width: 90px;
-            height: 90px;
-            background: #444;
-            border: 3px dashed #666;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: #666;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .ban-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: grayscale(1) brightness(0.6);
-        }
-        
-        .picks-column {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            align-items: center;
-        }
-        
-        .pick-slot {
-            width: 220px;
-            height: 220px;
-            background: #444;
-            border: 5px solid #666;
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s;
-        }
-        
-        .pick-slot.active {
-            border-color: #2ecc71;
-            box-shadow: 0 0 25px rgba(46, 204, 113, 0.7);
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 25px rgba(46, 204, 113, 0.7); }
-            50% { box-shadow: 0 0 35px rgba(46, 204, 113, 1); }
-        }
-        
-        .pick-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .slot-name {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0,0,0,0.85);
-            padding: 10px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-top: 2px solid #444;
-        }
-        
-        .center-panel {
-            flex: 1;
-            background: #222;
-            padding: 25px;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .search-box {
-            padding: 18px;
-            background: #333;
-            border: 2px solid #444;
-            color: white;
-            font-size: 18px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            transition: all 0.3s;
-        }
-        
-        .search-box:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
-        }
-        
-        .brawlers-grid {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 12px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #1a1a1a;
-            border-radius: 10px;
-            max-height: 550px;
-        }
-        
-        .brawler-card {
-            width: 110px;
-            height: 110px;
-            background: #333;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 3px solid transparent;
-            transition: all 0.3s;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-        }
-        
-        .brawler-card:hover {
-            transform: scale(1.08);
-            border-color: #3498db;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-        }
-        
-        .brawler-card.disabled {
-            opacity: 0.3;
-            filter: grayscale(1);
-            cursor: not-allowed;
-            transform: none !important;
-            border-color: transparent !important;
-        }
-        
-        .brawler-card img {
-            width: 100%;
-            height: 80px;
-            object-fit: contain;
-            padding: 8px;
-            background: #2a2a2a;
-        }
-        
-        .brawler-name {
-            height: 30px;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-top: 25px;
-        }
-        
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            min-width: 200px;
-        }
-        
-        .btn-ready {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            color: white;
-        }
-        
-        .btn-reset {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-        }
-        
-        .btn-select {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-        }
-        
-        .btn:active {
-            transform: translateY(-1px);
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 25px;
-            right: 25px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 18px 30px;
-            border-radius: 10px;
-            font-weight: bold;
-            z-index: 1000;
-            animation: slideIn 0.3s, fadeOut 0.3s 2.7s forwards;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            border-left: 5px solid #2ecc71;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes fadeOut {
-            to { opacity: 0; }
-        }
-        
-        .timer {
-            font-size: 20px;
-            color: #f39c12;
-            text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            border: 2px solid #f39c12;
-        }
-        
-        .timer.warning {
-            color: #e74c3c;
-            border-color: #e74c3c;
-            animation: blink 1s infinite;
-        }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .role-info {
-            text-align: center;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        .role-blue { 
-            background: linear-gradient(135deg, rgba(52, 152, 219, 0.2), rgba(41, 128, 185, 0.2)); 
-            color: #3498db;
-            border: 2px solid #3498db;
-        }
-        .role-red { 
-            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.2)); 
-            color: #e74c3c;
-            border: 2px solid #e74c3c;
-        }
-        .role-spectator { 
-            background: linear-gradient(135deg, rgba(149, 165, 166, 0.2), rgba(127, 140, 141, 0.2)); 
-            color: #95a5a6;
-            border: 2px solid #95a5a6;
-        }
-        .role-admin { 
-            background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.2)); 
-            color: #9b59b6;
-            border: 2px solid #9b59b6;
-        }
-        
-        .ready-status {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            margin-bottom: 20px;
-        }
-        
-        .status-blue { 
-            color: #3498db;
-            padding: 10px 20px;
-            border-radius: 8px;
-            background: rgba(52, 152, 219, 0.1);
-        }
-        .status-red { 
-            color: #e74c3c;
-            padding: 10px 20px;
-            border-radius: 8px;
-            background: rgba(231, 76, 60, 0.1);
-        }
-        .status-ready { 
-            color: #2ecc71 !important;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
-        }
-        .status-waiting { 
-            color: #f39c12 !important;
-        }
-        
         /* Полоса прокрутки */
         ::-webkit-scrollbar {
             width: 10px;
@@ -671,77 +691,49 @@
         
         .time-ban { color: #9b59b6; }
         .time-pick { color: #2ecc71; }
+        
+        /* Кнопка выхода */
+        .logout-btn {
+            padding: 8px 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        /* Ошибка доступа */
+        .access-error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid #e74c3c;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header" id="status">🎮 BRAWL STARS DRAFT TOURNAMENT</div>
         
-        <div class="role-info" id="role-info">Загрузка...</div>
+        <div class="role-info" id="role-info">
+            <span id="role-text">Загрузка...</span>
+            <button class="logout-btn" onclick="logout()" id="logout-btn" style="display: none;">🚪 Выйти</button>
+        </div>
         
         <!-- Таймер -->
         <div class="timer" id="phase-timer"></div>
         
-        <!-- Отображение выбранной карты -->
-        <div class="map-section" id="map-section">
-            <h3 style="font-size: 24px; margin-bottom: 10px; color: #f39c12;">ВЫБРАННАЯ КАРТА</h3>
-            <div class="map-container" id="map-container">
-                <div class="map-image" id="map-image">
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 20px; flex-direction: column; gap: 15px;">
-                        <div>🗺️ Карта не выбрана</div>
-                        <div style="font-size: 16px; color: #999;">Администратор выберет карту</div>
-                    </div>
-                </div>
-                <div class="map-info" id="map-info">
-                    <div class="map-name" id="map-name">—</div>
-                    <div class="mode-name" id="mode-name">—</div>
-                    <div class="mode-icon" id="mode-icon">
-                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 40px;">
-                            ?
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Выбор карты (только для админа) -->
-            <div class="map-selector" id="map-selector" style="display: none;">
-                <h3 style="font-size: 24px; margin-bottom: 20px; color: #9b59b6;">👑 ВЫБОР КАРТЫ (ТОЛЬКО ДЛЯ АДМИНА)</h3>
-                <div class="mode-tabs" id="mode-tabs">
-                    <!-- Вкладки режимов будут созданы динамически -->
-                </div>
-                <div class="maps-grid" id="maps-grid">
-                    <!-- Карты будут загружены динамически -->
-                </div>
-                <div class="controls" style="margin-top: 25px;">
-                    <button class="btn btn-select" onclick="selectMap()" id="select-map-btn">🗺️ ВЫБРАТЬ КАРТУ</button>
-                    <button class="btn btn-reset" onclick="resetDraft()" id="admin-reset-btn">🔄 СБРОСИТЬ ДРАФТ</button>
-                </div>
-            </div>
-            
-            <!-- Инструкция для админа -->
-            <div class="instructions" id="admin-instructions" style="display: none;">
-                <h3>📋 ИНСТРУКЦИЯ ДЛЯ АДМИНИСТРАТОРА</h3>
-                <ul>
-                    <li>1. Выберите режим игры (вкладка выше)</li>
-                    <li>2. Выберите конкретную карту из списка</li>
-                    <li>3. Нажмите "ВЫБРАТЬ КАРТУ" - карта появится у всех участников</li>
-                    <li>4. Когда команды будут готовы, они нажмут "ГОТОВ" на своих страницах</li>
-                    <li>5. Драфт начнется автоматически (40 секунд на баны)</li>
-                    <li>6. Используйте "СБРОСИТЬ ДРАФТ" для начала нового матча</li>
-                </ul>
-            </div>
-        </div>
-        
-        <!-- Статус готовности команд -->
-        <div class="ready-status" id="ready-status">
-            <div class="status-blue" id="blue-status">
-                СИНЯЯ КОМАНДА: <span id="blue-ready" class="status-waiting">ОЖИДАЕТ</span>
-            </div>
-            <div class="status-red" id="red-status">
-                КРАСНАЯ КОМАНДА: <span id="red-ready" class="status-waiting">ОЖИДАЕТ</span>
-            </div>
-        </div>
-        
+        <!-- Сначала блок выбора бойцов -->
         <div class="draft-container">
             <!-- Синяя команда -->
             <div class="team-side team-blue">
@@ -821,6 +813,66 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Потом блок карты (ПОД выбором бойцов) -->
+        <div class="map-section" id="map-section">
+            <h3 style="font-size: 24px; margin-bottom: 10px; color: #f39c12;">ВЫБРАННАЯ КАРТА</h3>
+            <div class="map-container" id="map-container">
+                <div class="map-image" id="map-image">
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 20px; flex-direction: column; gap: 15px;">
+                        <div>🗺️ Карта не выбрана</div>
+                        <div style="font-size: 16px; color: #999;">Администратор выберет карту</div>
+                    </div>
+                </div>
+                <div class="map-info" id="map-info">
+                    <div class="map-name" id="map-name">—</div>
+                    <div class="mode-name" id="mode-name">—</div>
+                    <div class="mode-icon" id="mode-icon">
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 40px;">
+                            ?
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Выбор карты (только для админа) -->
+            <div class="map-selector" id="map-selector" style="display: none;">
+                <h3 style="font-size: 24px; margin-bottom: 20px; color: #9b59b6;">👑 ВЫБОР КАРТЫ (ТОЛЬКО ДЛЯ АДМИНА)</h3>
+                <div class="mode-tabs" id="mode-tabs">
+                    <!-- Вкладки режимов будут созданы динамически -->
+                </div>
+                <div class="maps-grid" id="maps-grid">
+                    <!-- Карты будут загружены динамически -->
+                </div>
+                <div class="controls" style="margin-top: 25px;">
+                    <button class="btn btn-select" onclick="selectMap()" id="select-map-btn">🗺️ ВЫБРАТЬ КАРТУ</button>
+                    <button class="btn btn-reset" onclick="resetDraft()" id="admin-reset-btn">🔄 СБРОСИТЬ ДРАФТ</button>
+                </div>
+            </div>
+            
+            <!-- Инструкция для админа -->
+            <div class="instructions" id="admin-instructions" style="display: none;">
+                <h3>📋 ИНСТРУКЦИЯ ДЛЯ АДМИНИСТРАТОРА</h3>
+                <ul>
+                    <li>1. Выберите режим игры (вкладка выше)</li>
+                    <li>2. Выберите конкретную карту из списка</li>
+                    <li>3. Нажмите "ВЫБРАТЬ КАРТУ" - карта появится у всех участников</li>
+                    <li>4. Когда команды будут готовы, они нажмут "ГОТОВ" на своих страницах</li>
+                    <li>5. Драфт начнется автоматически (40 секунд на баны)</li>
+                    <li>6. Используйте "СБРОСИТЬ ДРАФТ" для начала нового матча</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Статус готовности команд -->
+        <div class="ready-status" id="ready-status">
+            <div class="status-blue" id="blue-status">
+                СИНЯЯ КОМАНДА: <span id="blue-ready" class="status-waiting">ОЖИДАЕТ</span>
+            </div>
+            <div class="status-red" id="red-status">
+                КРАСНАЯ КОМАНДА: <span id="red-ready" class="status-waiting">ОЖИДАЕТ</span>
+            </div>
+        </div>
     </div>
     
     <div id="notification-container"></div>
@@ -837,11 +889,15 @@
         let selectedMode = null;
         let currentMapImage = null;
         let currentModeImage = null;
+        let sessionId = null;
+        let accessDenied = false;
         
         // Элементы DOM
         const elements = {
             status: document.getElementById('status'),
             roleInfo: document.getElementById('role-info'),
+            roleText: document.getElementById('role-text'),
+            logoutBtn: document.getElementById('logout-btn'),
             phaseTimer: document.getElementById('phase-timer'),
             blueReady: document.getElementById('blue-ready'),
             redReady: document.getElementById('red-ready'),
@@ -871,23 +927,135 @@
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             updateRoleInfo();
-            loadState();
             
-            // Настройка поиска
-            elements.search.addEventListener('input', renderBrawlers);
-            
-            // Автообновление состояния каждые 1 секунду
-            setInterval(loadState, 1000);
-            
-            // Показать инструкции
-            setTimeout(() => {
-                if (currentRole === 'admin') {
-                    elements.adminInstructions.style.display = 'block';
-                } else if (currentRole === 'blue' || currentRole === 'red') {
-                    elements.playerInstructions.style.display = 'block';
+            // Проверяем доступ перед загрузкой состояния
+            checkAccess().then(hasAccess => {
+                if (hasAccess) {
+                    loadState();
+                    
+                    // Настройка поиска
+                    elements.search.addEventListener('input', renderBrawlers);
+                    
+                    // Автообновление состояния каждые 1 секунду
+                    setInterval(loadState, 1000);
+                    
+                    // Проверка сессии каждые 5 секунд
+                    setInterval(checkSession, 5000);
+                    
+                    // Показать инструкции
+                    setTimeout(() => {
+                        if (currentRole === 'admin') {
+                            elements.adminInstructions.style.display = 'block';
+                        } else if (currentRole === 'blue' || currentRole === 'red') {
+                            elements.playerInstructions.style.display = 'block';
+                        }
+                    }, 1000);
+                } else {
+                    // Показываем сообщение об ошибке доступа
+                    showAccessDenied();
                 }
-            }, 1000);
+            });
+            
+            // Обработка закрытия вкладки/окна
+            window.addEventListener('beforeunload', () => {
+                releaseSession();
+            });
         });
+        
+        async function checkAccess() {
+            if (currentRole === 'spectator') {
+                return true; // Наблюдатели всегда имеют доступ
+            }
+            
+            try {
+                const response = await fetch(`/api/check_session?role=${currentRole}&t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    return true;
+                } else {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                    return false;
+                }
+            } catch (error) {
+                console.error('Ошибка проверки доступа:', error);
+                return false;
+            }
+        }
+        
+        function showAccessDenied() {
+            elements.brawlersGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #e74c3c;">
+                    <div style="font-size: 36px; margin-bottom: 20px;">🚫</div>
+                    <div style="font-size: 24px; margin-bottom: 15px;">ДОСТУП ЗАБЛОКИРОВАН</div>
+                    <div style="font-size: 16px; margin-bottom: 25px;">
+                        ${currentRole === 'blue' ? 'Синяя' : 'Красная'} команда уже занята другим игроком.
+                    </div>
+                    <div style="font-size: 14px; color: #999; margin-bottom: 30px;">
+                        Дождитесь, пока текущий игрок выйдет, или станьте наблюдателем.
+                    </div>
+                    <button class="btn btn-reset" onclick="window.location.href='/'">
+                        👁️ Стать наблюдателем
+                    </button>
+                </div>
+            `;
+            
+            // Блокируем другие элементы
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.disabled = true;
+            });
+            
+            elements.search.disabled = true;
+            accessDenied = true;
+        }
+        
+        async function checkSession() {
+            if (currentRole === 'spectator' || accessDenied) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/check_session?role=${currentRole}&t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        showAccessDenied();
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка проверки сессии:', error);
+            }
+        }
+        
+        async function releaseSession() {
+            if (currentRole === 'spectator' || !currentRole) {
+                return;
+            }
+            
+            try {
+                await fetch('/api/release_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        role: currentRole
+                    })
+                });
+            } catch (error) {
+                console.error('Ошибка освобождения сессии:', error);
+            }
+        }
+        
+        async function logout() {
+            await releaseSession();
+            window.location.href = '/logout';
+        }
         
         function updateRoleInfo() {
             let roleText = '';
@@ -897,30 +1065,40 @@
                 case 'blue':
                     roleText = '🎮 ВЫ ИГРАЕТЕ ЗА СИНЮЮ КОМАНДУ';
                     roleClass = 'role-blue';
+                    elements.logoutBtn.style.display = 'block';
                     break;
                 case 'red':
                     roleText = '🎮 ВЫ ИГРАЕТЕ ЗА КРАСНУЮ КОМАНДУ';
                     roleClass = 'role-red';
+                    elements.logoutBtn.style.display = 'block';
                     break;
                 case 'admin':
                     roleText = '👑 ВЫ АДМИНИСТРАТОР ТУРНИРА';
                     roleClass = 'role-admin';
+                    elements.logoutBtn.style.display = 'block';
                     break;
                 default:
                     roleText = '👁️ ВЫ НАБЛЮДАТЕЛЬ';
                     roleClass = 'role-spectator';
+                    elements.logoutBtn.style.display = 'none';
             }
             
-            elements.roleInfo.textContent = roleText;
+            elements.roleText.textContent = roleText;
             elements.roleInfo.className = 'role-info ' + roleClass;
             
             // Показываем/скрываем элементы в зависимости от роли
-            elements.blueControls.style.display = currentRole === 'blue' ? 'flex' : 'none';
-            elements.redControls.style.display = currentRole === 'red' ? 'flex' : 'none';
-            elements.mapSelector.style.display = currentRole === 'admin' ? 'block' : 'none';
+            if (!accessDenied) {
+                elements.blueControls.style.display = currentRole === 'blue' ? 'flex' : 'none';
+                elements.redControls.style.display = currentRole === 'red' ? 'flex' : 'none';
+                elements.mapSelector.style.display = currentRole === 'admin' ? 'block' : 'none';
+            }
         }
         
         async function loadState() {
+            if (accessDenied) {
+                return;
+            }
+            
             try {
                 const response = await fetch(`/api/state?role=${currentRole}&t=${Date.now()}`);
                 const data = await response.json();
@@ -928,6 +1106,7 @@
                 if (data.success) {
                     draftState = data.state;
                     brawlers = data.brawlers || [];
+                    sessionId = data.session_id;
                     
                     // Если у нас еще нет карт и мы админ - загружаем карты
                     if (currentRole === 'admin' && Object.keys(availableMaps).length === 0 && data.maps) {
@@ -937,6 +1116,10 @@
                     
                     updateUI();
                     renderBrawlers();
+                } else {
+                    if (data.error === 'Доступ занят другим игроком') {
+                        showAccessDenied();
+                    }
                 }
             } catch (error) {
                 console.error('Ошибка загрузки состояния:', error);
@@ -944,7 +1127,7 @@
         }
         
         async function setReady() {
-            if (currentRole !== 'blue' && currentRole !== 'red') return;
+            if (currentRole !== 'blue' && currentRole !== 'red' || accessDenied) return;
             
             // Блокируем кнопку
             const btn = currentRole === 'blue' ? elements.blueReadyBtn : elements.redReadyBtn;
@@ -981,7 +1164,7 @@
         }
         
         async function resetDraft() {
-            if (currentRole !== 'admin') {
+            if (currentRole !== 'admin' || accessDenied) {
                 showNotification('❌ Только администратор может сбросить драфт');
                 return;
             }
@@ -1027,7 +1210,7 @@
         }
         
         async function selectBrawler(brawler) {
-            if (currentRole !== 'blue' && currentRole !== 'red') {
+            if (currentRole !== 'blue' && currentRole !== 'red' || accessDenied) {
                 showNotification('👁️ Только игроки могут выбирать бравлеров');
                 return;
             }
@@ -1065,7 +1248,7 @@
         }
         
         function updateUI() {
-            if (!draftState) return;
+            if (!draftState || accessDenied) return;
             
             // Обновляем статус
             let statusText = '';
@@ -1075,7 +1258,7 @@
                     statusText = '⏳ ОЖИДАНИЕ ГОТОВНОСТИ КОМАНД';
                     break;
                 case 'ban':
-                    statusText = '🚫 БАНИ: ОБЕ КОМАНДЫ ОДНОВРЕМЕННО (40 секунд)';
+                    statusText = '🚫 БАНЫ: ОБЕ КОМАНДЫ ОДНОВРЕМЕННО (40 секунд)';
                     break;
                 case 'pick':
                     const currentPick = draftState.current_pick_index + 1;
@@ -1136,9 +1319,61 @@
                 }
             }
             
-            // Обновляем слоты команд
+            // Обновляем слоты команд (исправлено отображение банов)
             updateTeamSlots('blue', draftState.blue_bans, draftState.blue_picks);
             updateTeamSlots('red', draftState.red_bans, draftState.red_picks);
+        }
+        
+        function updateTeamSlots(team, bans, picks) {
+            const banSlots = document.querySelectorAll(`#${team}-bans .ban-slot`);
+            const pickSlots = document.querySelectorAll(`#${team}-picks .pick-slot`);
+            
+            // Заполняем баны (исправлено: теперь правильно отображаются)
+            bans.forEach((brawler, index) => {
+                if (index < banSlots.length) {
+                    const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
+                    banSlots[index].innerHTML = `<img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">`;
+                    banSlots[index].classList.add('filled');
+                    banSlots[index].style.borderStyle = 'solid';
+                    banSlots[index].style.borderColor = '#e74c3c';
+                    banSlots[index].style.background = '#333';
+                }
+            });
+            
+            // Очищаем оставшиеся слоты банов
+            for (let i = bans.length; i < banSlots.length; i++) {
+                banSlots[i].innerHTML = '';
+                banSlots[i].classList.remove('filled');
+                banSlots[i].style.borderStyle = 'dashed';
+                banSlots[i].style.borderColor = '#666';
+                banSlots[i].style.background = '#444';
+            }
+            
+            // Заполняем пики
+            picks.forEach((brawler, index) => {
+                if (index < pickSlots.length) {
+                    const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
+                    pickSlots[index].innerHTML = `
+                        <img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">
+                        <div class="slot-name">${brawler.toUpperCase()}</div>
+                    `;
+                    
+                    // Подсвечиваем активный слот
+                    if (draftState.phase === 'pick' && 
+                        draftState.current_turn === team && 
+                        index === picks.length) {
+                        pickSlots[index].classList.add('active');
+                    } else {
+                        pickSlots[index].classList.remove('active');
+                    }
+                }
+            });
+            
+            // Очищаем оставшиеся слоты пиков
+            for (let i = picks.length; i < pickSlots.length; i++) {
+                pickSlots[i].innerHTML = '';
+                pickSlots[i].classList.remove('active');
+            }
         }
         
         function updatePhaseTimer() {
@@ -1200,51 +1435,6 @@
             }, 1000);
         }
         
-        function updateTeamSlots(team, bans, picks) {
-            const banSlots = document.querySelectorAll(`#${team}-bans .ban-slot`);
-            const pickSlots = document.querySelectorAll(`#${team}-picks .pick-slot`);
-            
-            // Очищаем все слоты
-            banSlots.forEach(slot => {
-                slot.innerHTML = '';
-                slot.style.background = '#444';
-                slot.style.borderStyle = 'dashed';
-            });
-            
-            pickSlots.forEach(slot => {
-                slot.innerHTML = '';
-                slot.classList.remove('active');
-            });
-            
-            // Заполняем баны
-            bans.forEach((brawler, index) => {
-                if (index < banSlots.length) {
-                    const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
-                    banSlots[index].innerHTML = `<img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">`;
-                    banSlots[index].style.borderStyle = 'solid';
-                    banSlots[index].style.background = '#333';
-                }
-            });
-            
-            // Заполняем пики
-            picks.forEach((brawler, index) => {
-                if (index < pickSlots.length) {
-                    const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
-                    pickSlots[index].innerHTML = `
-                        <img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">
-                        <div class="slot-name">${brawler.toUpperCase()}</div>
-                    `;
-                    
-                    // Подсвечиваем активный слот
-                    if (draftState.phase === 'pick' && 
-                        draftState.current_turn === team && 
-                        index === picks.length) {
-                        pickSlots[index].classList.add('active');
-                    }
-                }
-            });
-        }
-        
         function updateMapDisplay() {
             if (!draftState.selected_map) {
                 // Если карты нет, показываем заглушку
@@ -1268,8 +1458,8 @@
                 return;
             }
             
-            const mapImg = `/static/mappool/${draftState.selected_map.mode}/${draftState.selected_map.file}?v=1`;
-            const modeImg = `/static/modes/${draftState.selected_map.mode}.png?v=1`;
+            const mapImg = `/static/mappool/${draftState.selected_map.mode}/${draftState.selected_map.file}?v=2`;
+            const modeImg = `/static/modes/${draftState.selected_map.mode}.png?v=2`;
             
             // Обновляем только если изображения изменились
             if (currentMapImage !== mapImg) {
@@ -1332,7 +1522,7 @@
                     const mapCard = document.createElement('div');
                     mapCard.className = 'map-card';
                     mapCard.innerHTML = `
-                        <img src="/static/mappool/${mode}/${mapInfo.file}?v=1" 
+                        <img src="/static/mappool/${mode}/${mapInfo.file}?v=2" 
                              alt="${mapInfo.name}"
                              onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 140%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22#333%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22>${mapInfo.name}</text></svg>'">
                         <div class="map-card-name">${mapInfo.name.replace(/_/g, ' ')}</div>
@@ -1362,7 +1552,7 @@
         }
         
         async function selectMap() {
-            if (currentRole !== 'admin') {
+            if (currentRole !== 'admin' || accessDenied) {
                 showNotification('❌ Только администратор может выбирать карты');
                 return;
             }
@@ -1413,6 +1603,10 @@
         }
         
         function renderBrawlers() {
+            if (accessDenied) {
+                return;
+            }
+            
             elements.brawlersGrid.innerHTML = '';
             
             if (!brawlers.length) {
@@ -1450,13 +1644,13 @@
                 const card = document.createElement('div');
                 card.className = `brawler-card ${isSelected ? 'disabled' : ''}`;
                 card.innerHTML = `
-                    <img src="/static/brawler_images/${brawler}.png?v=1" 
+                    <img src="/static/brawler_images/${brawler}.png?v=2" 
                          alt="${brawler}"
                          onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22#333%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22>${brawler.charAt(0)}</text></svg>'">
                     <div class="brawler-name">${brawler}</div>
                 `;
                 
-                if (!isSelected && (currentRole === 'blue' || currentRole === 'red')) {
+                if (!isSelected && (currentRole === 'blue' || currentRole === 'red') && !accessDenied) {
                     card.onclick = () => selectBrawler(brawler);
                 } else if (isSelected) {
                     card.style.cursor = 'not-allowed';
