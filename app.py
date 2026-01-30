@@ -90,6 +90,18 @@ def check_auto_reset(state):
     if state['phase'] == 'finished' and state['finished_at']:
         elapsed = time.time() - state['finished_at']
         if elapsed > 60:
+            # Сбрасываем только ready статусы, чтобы команды могли начать новый драфт
+            state['blue_ready'] = False
+            state['red_ready'] = False
+            state['phase'] = 'waiting'
+            state['phase_start_time'] = None
+            state['current_turn'] = None
+            state['current_pick_index'] = 0
+            state['finished_at'] = None
+            state['auto_bans_done'] = False
+            state['auto_picks_done'] = [False, False, False, False, False, False]
+            state['bans_completed'] = False
+            # Не сбрасываем выбранные бравлеры и карту!
             return True
     return False
 
@@ -295,8 +307,8 @@ def get_state():
     room_id, state = get_or_create_state()
     
     if check_auto_reset(state):
-        reset_state()
-        room_id, state = get_or_create_state()
+        # Уже обработано в check_auto_reset
+        pass
     
     check_timer(state)
     
@@ -320,6 +332,21 @@ def set_ready():
         return jsonify({'success': False, 'error': 'Неверная роль'})
     
     room_id, state = get_or_create_state()
+    
+    # Если драфт завершен, сбрасываем пики и баны для нового драфта
+    if state['phase'] == 'finished':
+        state['blue_bans'] = []
+        state['red_bans'] = []
+        state['blue_picks'] = []
+        state['red_picks'] = []
+        state['all_selected'] = []
+        state['phase'] = 'waiting'
+        state['current_turn'] = None
+        state['current_pick_index'] = 0
+        state['finished_at'] = None
+        state['auto_bans_done'] = False
+        state['auto_picks_done'] = [False, False, False, False, False, False]
+        state['bans_completed'] = False
     
     if role == 'blue':
         state['blue_ready'] = True
@@ -356,9 +383,7 @@ def select_brawler():
     
     room_id, state = get_or_create_state()
     
-    if check_auto_reset(state):
-        reset_state()
-        return jsonify({'success': False, 'error': 'Драфт был сброшен по таймеру', 'auto_reset': True})
+    check_timer(state)
     
     success, message = update_state(state, role, brawler, 'select')
     
@@ -374,38 +399,66 @@ def select_brawler():
 @app.route('/api/reset', methods=['POST'])
 @admin_required
 def reset_draft():
-    reset_state()
+    room_id, state = get_or_create_state()
+    
+    # Полный сброс драфта
+    state['blue_bans'] = []
+    state['red_bans'] = []
+    state['blue_picks'] = []
+    state['red_picks'] = []
+    state['all_selected'] = []
+    state['phase'] = 'waiting'
+    state['phase_start_time'] = None
+    state['current_turn'] = None
+    state['pick_order'] = []
+    state['current_pick_index'] = 0
+    state['finished_at'] = None
+    state['blue_ready'] = False
+    state['red_ready'] = False
+    state['selected_map'] = None
+    state['selected_mode'] = None
+    state['timer_active'] = False
+    state['auto_bans_done'] = False
+    state['auto_picks_done'] = [False, False, False, False, False, False]
+    state['bans_completed'] = False
+    state['last_action'] = time.time()
+    
     return jsonify({
         'success': True,
-        'state': get_client_state(draft_states['main'], 'spectator'),
-        'message': 'Драфт сброшен!'
+        'state': get_client_state(state, 'spectator'),
+        'message': 'Драфт полностью сброшен!'
     })
 
-def reset_state():
-    draft_states['main'] = {
-        'blue_bans': [],
-        'red_bans': [],
-        'blue_picks': [],
-        'red_picks': [],
-        'all_selected': [],
-        'phase': 'waiting',
-        'phase_start_time': None,
-        'phase_duration': 40,
-        'current_turn': None,
-        'pick_order': [],
-        'current_pick_index': 0,
-        'created_at': time.time(),
-        'last_action': time.time(),
-        'finished_at': None,
-        'blue_ready': False,
-        'red_ready': False,
-        'selected_map': None,
-        'selected_mode': None,
-        'timer_active': False,
-        'auto_bans_done': False,
-        'auto_picks_done': [False, False, False, False, False, False],
-        'bans_completed': False
-    }
+@app.route('/api/new_draft', methods=['POST'])
+@admin_required
+def new_draft():
+    room_id, state = get_or_create_state()
+    
+    # Сброс только драфта (баны и пики), но карта остается
+    state['blue_bans'] = []
+    state['red_bans'] = []
+    state['blue_picks'] = []
+    state['red_picks'] = []
+    state['all_selected'] = []
+    state['phase'] = 'waiting'
+    state['phase_start_time'] = None
+    state['current_turn'] = None
+    state['pick_order'] = []
+    state['current_pick_index'] = 0
+    state['finished_at'] = None
+    state['blue_ready'] = False
+    state['red_ready'] = False
+    state['timer_active'] = False
+    state['auto_bans_done'] = False
+    state['auto_picks_done'] = [False, False, False, False, False, False]
+    state['bans_completed'] = False
+    state['last_action'] = time.time()
+    
+    return jsonify({
+        'success': True,
+        'state': get_client_state(state, 'spectator'),
+        'message': 'Новый драфт начат (карта сохранена)!'
+    })
 
 @app.route('/api/maps')
 def get_maps():
