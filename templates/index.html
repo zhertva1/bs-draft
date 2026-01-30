@@ -801,11 +801,13 @@
                     <h3>🎮 ИНСТРУКЦИЯ ДЛЯ ИГРОКА</h3>
                     <ul>
                         <li>1. Нажмите кнопку "ГОТОВ" ниже, когда будете готовы к драфту</li>
-                        <li>2. Дождитесь готовности второй команды</li>
+                        <li>2. ОБА игрока должны нажать "ГОТОВ" для начала драфта</li>
                         <li>3. У вас 40 секунд на все баны (одновременно с противником)</li>
-                        <li>4. Затем 40 секунд на каждый пик по очереди</li>
-                        <li>5. Не успеете - система выберет случайного бравлера</li>
-                        <li>6. Выбирайте бравлеров кликом по карточкам выше</li>
+                        <li>4. Во время банов можно банить одинаковых бойцов!</li>
+                        <li>5. После банов: 40 секунд на каждый пик по очереди</li>
+                        <li>6. Во время пиков нельзя выбирать одинаковых бойцов</li>
+                        <li>7. Не успеете - система выберет случайного бравлера</li>
+                        <li>8. Выбирайте бравлеров кликом по карточкам выше</li>
                     </ul>
                 </div>
             </div>
@@ -912,11 +914,14 @@
                     <li>2. Выберите конкретную карту из списка</li>
                     <li>3. Нажмите "ВЫБРАТЬ КАРТУ" - карта появится у всех участников</li>
                     <li>4. Когда команды будут готовы, они нажмут "ГОТОВ" на своих страницах</li>
-                    <li>5. Драфт начнется автоматически: 40 секунд на все баны</li>
-                    <li>6. После банов: 40 секунд на каждый пик по очереди</li>
-                    <li>7. Не успели? Система выберет случайного бравлера!</li>
-                    <li>8. Используйте "НОВЫЙ ДРАФТ" для начала нового матча (карта сохраняется)</li>
-                    <li>9. Используйте "СБРОСИТЬ ДРАФТ" для полного сброса (включая карту)</li>
+                    <li>5. ОБЕ команды должны нажать "ГОТОВ" для начала драфта</li>
+                    <li>6. Драфт начнется автоматически: 40 секунд на все баны</li>
+                    <li>7. Во время банов команды могут банить одинаковых бойцов</li>
+                    <li>8. После банов: 40 секунд на каждый пик по очереди</li>
+                    <li>9. Во время пиков нельзя выбирать одинаковых бойцов</li>
+                    <li>10. Не успели? Система выберет случайного бравлера!</li>
+                    <li>11. Используйте "НОВЫЙ ДРАФТ" для начала нового матча (карта сохраняется)</li>
+                    <li>12. Используйте "СБРОСИТЬ ДРАФТ" для полного сброса (включая карту)</li>
                 </ul>
             </div>
         </div>
@@ -1331,9 +1336,17 @@
                     // Показываем кнопки готовности если они скрыты
                     if (currentRole === 'blue' && elements.blueControls) {
                         elements.blueControls.style.display = 'flex';
+                        if (elements.blueReadyBtn) {
+                            elements.blueReadyBtn.disabled = false;
+                            elements.blueReadyBtn.textContent = draftState.blue_ready ? '✅ ГОТОВ' : '✅ ГОТОВ';
+                        }
                     }
                     if (currentRole === 'red' && elements.redControls) {
                         elements.redControls.style.display = 'flex';
+                        if (elements.redReadyBtn) {
+                            elements.redReadyBtn.disabled = false;
+                            elements.redReadyBtn.textContent = draftState.red_ready ? '✅ ГОТОВ' : '✅ ГОТОВ';
+                        }
                     }
                     break;
                 case 'ban':
@@ -1471,7 +1484,6 @@
                 const modeImage = createModeImageElement();
                 const modeUrl = `/static/modes/${draftState.selected_map.mode}.png?t=${Date.now()}`;
                 
-                // Проверяем кэш
                 const cachedUrl = modeImageCache.get(draftState.selected_map.mode);
                 
                 modeImage.onload = function() {
@@ -1484,10 +1496,8 @@
                     elements.centerModePlaceholder.style.display = 'flex';
                 };
                 
-                // Используем кэшированный URL или загружаем новый
                 modeImage.src = cachedUrl || modeUrl;
                 
-                // Если в кэше было изображение, сразу показываем его
                 if (cachedUrl) {
                     modeImage.style.display = 'block';
                     elements.centerModePlaceholder.style.display = 'none';
@@ -1644,12 +1654,31 @@
             }
             
             filteredBrawlers.forEach(brawler => {
-                const isSelected = draftState && draftState.all_selected ? draftState.all_selected.includes(brawler) : false;
+                // В фазе банов показываем всех бравлеров как доступных
+                // Серыми делаем только своих банов
+                let isDisabled = false;
+                
+                if (draftState) {
+                    if (draftState.phase === 'ban' && !draftState.bans_completed) {
+                        // В фазе банов отключаем только своих банов
+                        if (currentRole === 'blue' && draftState.blue_bans && draftState.blue_bans.includes(brawler)) {
+                            isDisabled = true;
+                        } else if (currentRole === 'red' && draftState.red_bans && draftState.red_bans.includes(brawler)) {
+                            isDisabled = true;
+                        } else if (currentRole === 'admin' || currentRole === 'spectator') {
+                            // Для админа и наблюдателя показываем все баны как выбранные
+                            const allBans = [...(draftState.blue_bans || []), ...(draftState.red_bans || [])];
+                            isDisabled = allBans.includes(brawler);
+                        }
+                    } else {
+                        // В других фазах используем all_selected
+                        isDisabled = draftState.all_selected && draftState.all_selected.includes(brawler);
+                    }
+                }
                 
                 const card = document.createElement('div');
-                card.className = `brawler-card ${isSelected ? 'disabled' : ''}`;
+                card.className = `brawler-card ${isDisabled ? 'disabled' : ''}`;
                 
-                // Используем кэшированное изображение или загружаем новое
                 const cachedSrc = brawlerImageCache.get(brawler);
                 const imgUrl = cachedSrc || `/static/brawler_images/${encodeURIComponent(brawler)}.png`;
                 
@@ -1667,7 +1696,7 @@
                 card.appendChild(img);
                 card.appendChild(nameDiv);
                 
-                if (!isSelected && (currentRole === 'blue' || currentRole === 'red')) {
+                if (!isDisabled && (currentRole === 'blue' || currentRole === 'red')) {
                     card.onclick = () => selectBrawler(brawler);
                 }
                 
