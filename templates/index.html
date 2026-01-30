@@ -393,14 +393,6 @@
             color: white;
         }
         
-        .btn-logout {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-            padding: 10px 20px;
-            font-size: 14px;
-            min-width: auto;
-        }
-        
         .btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.4);
@@ -474,9 +466,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
         .role-blue { 
@@ -616,24 +605,6 @@
             margin-bottom: 8px;
         }
         
-        /* Кнопка выхода */
-        .logout-btn {
-            padding: 8px 16px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
-        
         /* Счетчики */
         .counters {
             display: flex;
@@ -660,7 +631,6 @@
         
         <div class="role-info" id="role-info">
             <span id="role-text">Загрузка...</span>
-            <button class="logout-btn" onclick="logout()" id="logout-btn" style="display: none;">🚪 Выйти</button>
         </div>
         
         <!-- Таймер -->
@@ -816,7 +786,7 @@
                     <li>4. <strong>ПИКИ (40 секунд на каждый):</strong> По очереди выбирайте бравлеров</li>
                     <li>5. Если не успели - будет автоматический выбор случайного бравлера</li>
                     <li>6. Активный слот подсвечивается зеленой анимацией</li>
-                    <li>7. Чтобы выйти, нажмите кнопку "🚪 Выйти" в верхней панели</li>
+                    <li>7. Чтобы выйти, просто закройте страницу - место освободится через 30 секунд</li>
                 </ul>
             </div>
         </div>
@@ -844,7 +814,6 @@
             status: document.getElementById('status'),
             roleInfo: document.getElementById('role-info'),
             roleText: document.getElementById('role-text'),
-            logoutBtn: document.getElementById('logout-btn'),
             phaseTimer: document.getElementById('phase-timer'),
             blueReady: document.getElementById('blue-ready'),
             redReady: document.getElementById('red-ready'),
@@ -889,9 +858,6 @@
                     // Автообновление состояния каждые 1 секунду
                     setInterval(loadState, 1000);
                     
-                    // Проверка сессии каждые 5 секунд
-                    setInterval(checkSession, 5000);
-                    
                     // Показать инструкции
                     setTimeout(() => {
                         if (currentRole === 'admin') {
@@ -918,7 +884,7 @@
             }
             
             try {
-                const response = await fetch(`/api/check_session?role=${currentRole}&t=${Date.now()}`);
+                const response = await fetch(`/api/state?role=${currentRole}&t=${Date.now()}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -961,27 +927,6 @@
             accessDenied = true;
         }
         
-        async function checkSession() {
-            if (currentRole === 'spectator' || accessDenied) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/check_session?role=${currentRole}&t=${Date.now()}`);
-                const data = await response.json();
-                
-                if (!data.success) {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    } else {
-                        showAccessDenied();
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка проверки сессии:', error);
-            }
-        }
-        
         async function releaseSession() {
             if (currentRole === 'spectator' || !currentRole) {
                 return;
@@ -1002,11 +947,6 @@
             }
         }
         
-        async function logout() {
-            await releaseSession();
-            window.location.href = '/logout';
-        }
-        
         function updateRoleInfo() {
             let roleText = '';
             let roleClass = '';
@@ -1015,22 +955,18 @@
                 case 'blue':
                     roleText = '🎮 ВЫ ИГРАЕТЕ ЗА СИНЮЮ КОМАНДУ';
                     roleClass = 'role-blue';
-                    elements.logoutBtn.style.display = 'block';
                     break;
                 case 'red':
                     roleText = '🎮 ВЫ ИГРАЕТЕ ЗА КРАСНУЮ КОМАНДУ';
                     roleClass = 'role-red';
-                    elements.logoutBtn.style.display = 'block';
                     break;
                 case 'admin':
                     roleText = '👑 ВЫ АДМИНИСТРАТОР ТУРНИРА';
                     roleClass = 'role-admin';
-                    elements.logoutBtn.style.display = 'block';
                     break;
                 default:
                     roleText = '👁️ ВЫ НАБЛЮДАТЕЛЬ';
                     roleClass = 'role-spectator';
-                    elements.logoutBtn.style.display = 'none';
             }
             
             elements.roleText.textContent = roleText;
