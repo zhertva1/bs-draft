@@ -1,10 +1,10 @@
 import os
 import random
 import time
-from flask import Flask, render_template, jsonify, request, session, send_from_directory
+from flask import Flask, render_template, jsonify, request, session, redirect
 from datetime import datetime, timedelta
-from functools import wraps
 import threading
+import uuid
 
 app = Flask(__name__)
 app.secret_key = 'super-secret-key-for-brawl-draft'
@@ -65,9 +65,9 @@ MAPS_BY_MODE = get_maps_by_mode()
 draft_states = {}
 # Активные сессии по командам
 active_sessions = {
-    'blue': None,
-    'red': None,
-    'admin': None
+    'blue': {'id': None, 'last_active': 0},
+    'red': {'id': None, 'last_active': 0},
+    'admin': {'id': None, 'last_active': 0}
 }
 # Блокировка для потокобезопасности
 state_lock = threading.Lock()
@@ -107,24 +107,38 @@ def check_session_access(role, session_id):
         if role in ['admin', 'spectator']:
             return True
         
-        # Если для этой роли нет активной сессии, разрешаем доступ
-        if active_sessions[role] is None:
-            active_sessions[role] = session_id
+        current_time = time.time()
+        
+        # Проверяем, не истекла ли старая сессия (30 секунд бездействия)
+        if (active_sessions[role]['id'] and 
+            current_time - active_sessions[role]['last_active'] > 30):
+            # Освобождаем старую сессию
+            print(f"⏰ Сессия истекла для {role}")
+            active_sessions[role]['id'] = None
+        
+        # Если для этой роли нет активной сессии, занимаем ее
+        if active_sessions[role]['id'] is None:
+            active_sessions[role]['id'] = session_id
+            active_sessions[role]['last_active'] = current_time
+            print(f"✅ Сессия занята для {role}: {session_id[:8]}...")
             return True
         
-        # Если сессия совпадает с активной, разрешаем доступ
-        if active_sessions[role] == session_id:
+        # Если сессия совпадает с активной, обновляем время
+        if active_sessions[role]['id'] == session_id:
+            active_sessions[role]['last_active'] = current_time
             return True
         
         # Иначе доступ запрещен
+        print(f"❌ Доступ запрещен для {role}. Активная сессия: {active_sessions[role]['id'][:8]}...")
         return False
 
 def release_session(role, session_id):
     """Освобождает сессию для роли"""
     with state_lock:
-        if active_sessions[role] == session_id:
-            active_sessions[role] = None
-            print(f"🔓 Сессия освобождена: {role}")
+        if active_sessions[role]['id'] == session_id:
+            active_sessions[role]['id'] = None
+            active_sessions[role]['last_active'] = 0
+            print(f"🔓 Сессия освобождена для {role}")
 
 def check_auto_reset(state):
     """Проверяет, нужно ли сбросить драфт"""
@@ -310,38 +324,28 @@ def get_client_state(state, team):
         
         return client_state
 
-# Декоратор для проверки админ-доступа
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        token = request.args.get('token') or session.get('admin_token')
-        if not token or token != ADMIN_TOKEN:
-            return jsonify({'success': False, 'error': 'Доступ запрещен'}), 403
-        return f(*args, **kwargs)
-    return decorated_function
-
 # ========== РОЛИ ==========
 @app.route('/')
 def spectator_view():
-    # Сбрасываем сессию наблюдателя при каждом входе
     session.clear()
     session['role'] = 'spectator'
-    session['session_id'] = str(time.time()) + str(random.random())
+    session['session_id'] = str(uuid.uuid4())
     return render_template('index.html', role='spectator')
 
 @app.route('/blue')
 def blue_view():
-    session.clear()  # Очищаем сессию перед установкой новой
-    session_id = str(time.time()) + str(random.random())
+    # Очищаем сессию и создаем новую
+    session.clear()
+    session_id = str(uuid.uuid4())
     session['session_id'] = session_id
     session['role'] = 'blue'
-    session.modified = True  # Убедимся, что сессия сохранена
+    session.modified = True
     
-    print(f"🔵 Попытка входа синей команды. Сессия ID: {session_id}")
+    print(f"🔵 Попытка входа синей команды. Сессия ID: {session_id[:8]}...")
     
     # Проверяем доступ
     if not check_session_access('blue', session_id):
-        print(f"❌ Доступ запрещен для синей команды. Активная сессия: {active_sessions['blue']}")
+        print(f"❌ Доступ запрещен для синей команды")
         return render_template('access_denied.html', 
                              message="Синяя команда уже занята другим игроком. Дождитесь, пока текущий игрок выйдет.",
                              role='spectator'), 403
@@ -351,17 +355,18 @@ def blue_view():
 
 @app.route('/red')
 def red_view():
-    session.clear()  # Очищаем сессию перед установкой новой
-    session_id = str(time.time()) + str(random.random())
+    # Очищаем сессию и создаем новую
+    session.clear()
+    session_id = str(uuid.uuid4())
     session['session_id'] = session_id
     session['role'] = 'red'
     session.modified = True
     
-    print(f"🔴 Попытка входа красной команды. Сессия ID: {session_id}")
+    print(f"🔴 Попытка входа красной команды. Сессия ID: {session_id[:8]}...")
     
     # Проверяем доступ
     if not check_session_access('red', session_id):
-        print(f"❌ Доступ запрещен для красной команды. Активная сессия: {active_sessions['red']}")
+        print(f"❌ Доступ запрещен для красной команды")
         return render_template('access_denied.html',
                              message="Красная команда уже занята другим игроком. Дождитесь, пока текущий игрок выйдет.",
                              role='spectator'), 403
@@ -373,7 +378,7 @@ def red_view():
 def admin_view(token):
     if token == ADMIN_TOKEN:
         session.clear()
-        session_id = str(time.time()) + str(random.random())
+        session_id = str(uuid.uuid4())
         session['session_id'] = session_id
         session['admin_token'] = ADMIN_TOKEN
         session['role'] = 'admin'
@@ -382,7 +387,7 @@ def admin_view(token):
         # Регистрируем админ-сессию
         check_session_access('admin', session_id)
         
-        print(f"👑 Админ вошел. Сессия ID: {session_id}")
+        print(f"👑 Админ вошел. Сессия ID: {session_id[:8]}...")
         return render_template('index.html', role='admin')
     else:
         return render_template('access_denied.html',
@@ -397,10 +402,10 @@ def logout():
     
     if role and session_id:
         release_session(role, session_id)
-        print(f"🚪 Выход: {role}, сессия: {session_id}")
+        print(f"🚪 Выход: {role}, сессия: {session_id[:8]}...")
     
     session.clear()
-    return render_template('logout.html')
+    return redirect('/')
 
 # ========== API МАРШРУТЫ ==========
 @app.route('/api/state')
@@ -408,16 +413,13 @@ def get_state():
     role = request.args.get('role', 'spectator')
     session_id = session.get('session_id', '')
     
-    print(f"📊 Запрос состояния для роли: {role}, сессия: {session_id}")
-    
     # Проверяем доступ для командных ролей
     if role in ['blue', 'red', 'admin']:
         if not check_session_access(role, session_id):
-            print(f"❌ Доступ запрещен для {role}")
             return jsonify({
                 'success': False,
                 'error': 'Доступ занят другим игроком',
-                'redirect': '/logout'
+                'redirect': '/'
             }), 403
     
     room_id, state = get_or_create_state()
@@ -459,7 +461,7 @@ def set_ready():
     
     # Проверяем доступ
     if not check_session_access(role, session_id):
-        return jsonify({'success': False, 'error': 'Доступ занят другим игроком', 'redirect': '/logout'}), 403
+        return jsonify({'success': False, 'error': 'Доступ занят другим игроком', 'redirect': '/'}), 403
     
     room_id, state = get_or_create_state()
     
@@ -496,7 +498,7 @@ def select_brawler():
     
     # Проверяем доступ
     if not check_session_access(role, session_id):
-        return jsonify({'success': False, 'error': 'Доступ занят другим игроком', 'redirect': '/logout'}), 403
+        return jsonify({'success': False, 'error': 'Доступ занят другим игроком', 'redirect': '/'}), 403
     
     if brawler not in BRWLERS:
         return jsonify({'success': False, 'error': 'Бравлер не найден'})
@@ -520,8 +522,11 @@ def select_brawler():
         return jsonify({'success': False, 'error': message})
 
 @app.route('/api/reset', methods=['POST'])
-@admin_required
 def reset_draft():
+    # Проверяем, что это админ
+    if session.get('admin_token') != ADMIN_TOKEN:
+        return jsonify({'success': False, 'error': 'Доступ запрещен'}), 403
+    
     reset_state()
     return jsonify({
         'success': True,
@@ -565,8 +570,11 @@ def get_maps():
     })
 
 @app.route('/api/select_map', methods=['POST'])
-@admin_required
 def select_map():
+    # Проверяем, что это админ
+    if session.get('admin_token') != ADMIN_TOKEN:
+        return jsonify({'success': False, 'error': 'Доступ запрещен'}), 403
+    
     data = request.json
     map_name = data.get('map_name')
     map_mode = data.get('map_mode')
@@ -597,23 +605,7 @@ def select_map():
         'message': f'Карта {map_name} выбрана!'
     })
 
-# API для проверки состояния сессии
-@app.route('/api/check_session')
-def check_session():
-    role = request.args.get('role', '')
-    session_id = session.get('session_id', '')
-    
-    if role in ['blue', 'red', 'admin']:
-        if not check_session_access(role, session_id):
-            return jsonify({
-                'success': False,
-                'error': 'Доступ занят',
-                'redirect': '/logout'
-            })
-    
-    return jsonify({'success': True})
-
-# API для освобождения сессии
+# API для освобождения сессии при закрытии страницы
 @app.route('/api/release_session', methods=['POST'])
 def release_session_api():
     data = request.json
@@ -638,8 +630,8 @@ def test_page():
         'brawlers': len(BRWLERS),
         'maps': {mode: len(maps) for mode, maps in MAPS_BY_MODE.items()},
         'admin_url': f'/admin/{ADMIN_TOKEN}',
-        'active_sessions': active_sessions,
-        'current_session': session.get('session_id'),
+        'active_sessions': {k: v['id'][:8] + '...' if v['id'] else None for k, v in active_sessions.items()},
+        'current_session': session.get('session_id', '')[:8] + '...' if session.get('session_id') else None,
         'current_role': session.get('role')
     })
 
@@ -657,8 +649,6 @@ if __name__ == '__main__':
     print(f"🔵 Синяя команда: http://localhost:{port}/blue")
     print(f"🔴 Красная команда: http://localhost:{port}/red")
     print(f"⚡ Администратор: http://localhost:{port}/admin/{ADMIN_TOKEN}")
-    print(f"🚪 Выход: http://localhost:{port}/logout")
-    print(f"📊 Тестовая страница: http://localhost:{port}/test")
     print("="*50)
     print(f"✅ Всего бравлеров: {len(BRWLERS)}")
     print(f"✅ Режимов карт: {len(MAPS_BY_MODE)}")
@@ -669,7 +659,8 @@ if __name__ == '__main__':
         print("⚠️  Карты не загружены! Создайте папки в static/mappool/")
     print("="*50)
     print("⏰ Таймеры: 40 секунд на баны, 40 секунд на каждый пик")
-    print("🔒 Безопасность: Один игрок на команду, автоматическая блокировка")
+    print("🔒 Безопасность: Один игрок на команду")
+    print("🔄 Автоочистка: Сессии очищаются через 30 секунд бездействия")
     print("="*50 + "\n")
     
     app.run(host='0.0.0.0', port=port, debug=False)
