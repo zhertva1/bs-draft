@@ -84,7 +84,9 @@ def get_or_create_state():
             'bans_completed': False,
             'draft_started': False,
             'blue_team_name': 'СИНЯЯ КОМАНДА',
-            'red_team_name': 'КРАСНАЯ КОМАНДА'
+            'red_team_name': 'КРАСНАЯ КОМАНДА',
+            'picking_team': None,  # Команда, которая начинает пики
+            'next_pick_indicator': 0  # Индекс следующего пика для отображения "NEXT"
         }
     
     return 'main', draft_states['main']
@@ -104,6 +106,8 @@ def check_auto_reset(state):
             state['auto_picks_done'] = [False, False, False, False, False, False]
             state['bans_completed'] = False
             state['draft_started'] = False
+            state['picking_team'] = None
+            state['next_pick_indicator'] = 0
             return True
     return False
 
@@ -166,6 +170,7 @@ def check_timer(state):
                 if b not in state['all_selected']:
                     state['all_selected'].append(b)
             
+            # Определяем, какая команда начинает пики
             state['picking_team'] = random.choice(['blue', 'red'])
             if state['picking_team'] == 'blue':
                 state['pick_order'] = ['blue', 'red', 'red', 'blue', 'blue', 'red']
@@ -175,6 +180,7 @@ def check_timer(state):
             state['phase'] = 'pick'
             state['current_turn'] = state['pick_order'][0]
             state['current_pick_index'] = 0
+            state['next_pick_indicator'] = 0  # Показываем "NEXT" на первом пике
             state['phase_start_time'] = time.time()
     
     elif state['phase'] == 'pick':
@@ -183,6 +189,7 @@ def check_timer(state):
                 if auto_pick(state, state['current_turn']):
                     state['auto_picks_done'][state['current_pick_index']] = True
                     state['current_pick_index'] += 1
+                    state['next_pick_indicator'] = state['current_pick_index']
                     
                     if len(state['blue_picks']) == 3 and len(state['red_picks']) == 3:
                         state['phase'] = 'finished'
@@ -229,6 +236,7 @@ def update_state(state, team, brawler, action_type):
                 if b not in state['all_selected']:
                     state['all_selected'].append(b)
             
+            # Определяем, какая команда начинает пики
             state['picking_team'] = random.choice(['blue', 'red'])
             if state['picking_team'] == 'blue':
                 state['pick_order'] = ['blue', 'red', 'red', 'blue', 'blue', 'red']
@@ -238,6 +246,7 @@ def update_state(state, team, brawler, action_type):
             state['phase'] = 'pick'
             state['current_turn'] = state['pick_order'][0]
             state['current_pick_index'] = 0
+            state['next_pick_indicator'] = 0
             state['phase_start_time'] = time.time()
     
     elif state['phase'] == 'pick':
@@ -257,6 +266,7 @@ def update_state(state, team, brawler, action_type):
         state['all_selected'].append(brawler)
         state['last_action'] = time.time()
         state['current_pick_index'] += 1
+        state['next_pick_indicator'] = state['current_pick_index']
         state['phase_start_time'] = time.time()
         
         if len(state['blue_picks']) == 3 and len(state['red_picks']) == 3:
@@ -293,6 +303,9 @@ def get_client_state(state, role):
         client_state['time_left'] = max(0, state['phase_duration'] - int(elapsed))
     else:
         client_state['time_left'] = None
+    
+    # Определяем, какую монетку показывать
+    client_state['show_coin'] = state['picking_team']
     
     return client_state
 
@@ -373,6 +386,8 @@ def set_ready():
         state['auto_picks_done'] = [False, False, False, False, False, False]
         state['bans_completed'] = False
         state['draft_started'] = False
+        state['picking_team'] = None
+        state['next_pick_indicator'] = 0
     
     if role == 'blue':
         state['blue_ready'] = True
@@ -450,6 +465,8 @@ def reset_draft():
     state['auto_picks_done'] = [False, False, False, False, False, False]
     state['bans_completed'] = False
     state['draft_started'] = False
+    state['picking_team'] = None
+    state['next_pick_indicator'] = 0
     state['last_action'] = time.time()
     
     return jsonify({
@@ -479,6 +496,8 @@ def new_draft():
     state['auto_picks_done'] = [False, False, False, False, False, False]
     state['bans_completed'] = False
     state['draft_started'] = False
+    state['picking_team'] = None
+    state['next_pick_indicator'] = 0
     state['last_action'] = time.time()
     
     return jsonify({
@@ -555,7 +574,7 @@ def select_map():
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     response = send_from_directory('static', filename)
-    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.otf')):
         response.headers['Cache-Control'] = 'public, max-age=31536000'
         response.headers['Expires'] = (datetime.utcnow() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
     return response
