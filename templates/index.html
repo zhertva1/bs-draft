@@ -896,7 +896,7 @@
         let phaseTimer = null;
         let availableMaps = {};
         let selectedMap = null;
-        selectedMode = null;
+        let selectedMode = null;
         let currentMapImage = null;
         let currentModeImage = null;
         
@@ -994,6 +994,9 @@
         async function loadState() {
             try {
                 const response = await fetch(`/api/state?role=${currentRole}&t=${Date.now()}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1009,6 +1012,8 @@
                     updateUI();
                     updatePhaseTimer();
                     renderBrawlers();
+                } else {
+                    console.error('Ошибка загрузки состояния:', data.error);
                 }
             } catch (error) {
                 console.error('Ошибка загрузки состояния:', error);
@@ -1068,6 +1073,7 @@
             
             // Блокируем кнопку
             const btn = currentRole === 'blue' ? elements.blueReadyBtn : elements.redReadyBtn;
+            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = '⏳ ОЖИДАНИЕ...';
             
@@ -1075,12 +1081,18 @@
                 const response = await fetch('/api/ready', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         role: currentRole
                     })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1090,13 +1102,13 @@
                 } else {
                     showNotification('❌ ' + (data.error || 'Ошибка'));
                     btn.disabled = false;
-                    btn.textContent = '✅ ГОТОВ';
+                    btn.textContent = originalText;
                 }
             } catch (error) {
                 console.error('Ошибка установки готовности:', error);
-                showNotification('❌ Ошибка соединения');
+                showNotification('❌ Ошибка соединения. Проверьте сервер.');
                 btn.disabled = false;
-                btn.textContent = '✅ ГОТОВ';
+                btn.textContent = originalText;
             }
         }
         
@@ -1114,9 +1126,15 @@
                 const response = await fetch('/api/reset', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     }
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1152,13 +1170,19 @@
                 const response = await fetch('/api/select', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         brawler: brawler,
                         role: currentRole
                     })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1176,7 +1200,7 @@
                 }
             } catch (error) {
                 console.error('Ошибка выбора бравлера:', error);
-                showNotification('❌ Ошибка соединения');
+                showNotification('❌ Ошибка соединения с сервером');
             }
         }
         
@@ -1416,20 +1440,28 @@
             }
             
             // Блокируем кнопку на время запроса
-            elements.selectMapBtn.disabled = true;
-            elements.selectMapBtn.textContent = '⏳ ВЫБОР...';
+            const btn = elements.selectMapBtn;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '⏳ ВЫБОР...';
             
             try {
                 const response = await fetch('/api/select_map', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         map_name: selectedMap,
                         map_mode: selectedMode
                     })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1450,8 +1482,8 @@
                 showNotification('❌ Ошибка соединения при выборе карты');
             } finally {
                 // Разблокируем кнопку
-                elements.selectMapBtn.disabled = false;
-                elements.selectMapBtn.textContent = '🗺️ ВЫБРАТЬ КАРТУ';
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
         
