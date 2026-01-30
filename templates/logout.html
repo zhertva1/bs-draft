@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выход - Brawl Stars Draft</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0f0f0f; 
+            color: white; 
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 600px;
+            background: #222;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #2ecc71;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2ecc71;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        .message {
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 200px;
+            text-decoration: none;
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+    </style>
+    <script>
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 3000);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">👋</div>
+        <h1>ВЫ ВЫШЛИ</h1>
+        <div class="message">Вы успешно вышли из системы. Ваше место освобождено.</div>
+        <a href="/" class="btn">Вернуться на главную</a>
+        <div style="margin-top: 20px; color: #999; font-size: 14px;">
+            Автоматический переход через 3 секунды...
+        </div>
+    </div>
+</body>
+</html>
