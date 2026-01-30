@@ -78,178 +78,37 @@
             }
         }
         
-        .map-section {
-            background: #222;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            text-align: center;
-            border: 2px solid #444;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: all 0.3s;
-        }
-        
-        .map-container {
+        .ready-status {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            margin-top: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .map-image-container {
-            width: 512px;
-            height: 779px;
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 5px solid #555;
-            background: #1a1a1a;
-        }
-        
-        .map-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: opacity 0.3s;
-        }
-        
-        .map-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .mode-icon {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 4px solid #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            background: #1a1a1a;
-        }
-        
-        .mode-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 10px;
-        }
-        
-        .map-name {
-            font-size: 28px;
-            font-weight: bold;
-            color: #f39c12;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        .mode-name {
-            font-size: 24px;
-            color: #3498db;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-        
-        .map-selector {
-            background: #1a1a1a;
-            padding: 25px;
-            border-radius: 15px;
-            margin-top: 25px;
-            border: 2px solid #444;
-            transition: all 0.3s;
-        }
-        
-        .mode-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .mode-tab {
-            padding: 12px 24px;
-            background: #333;
-            border: 2px solid #444;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
-        
-        .mode-tab:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-        }
-        
-        .mode-tab.active {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            border-color: #3498db;
-            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
-        }
-        
-        .maps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px;
-            max-height: 350px;
-            overflow-y: auto;
+            justify-content: space-between;
             padding: 15px;
-            background: #222;
+            margin-bottom: 20px;
             border-radius: 10px;
-        }
-        
-        .map-card {
-            background: #333;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.3s;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-        }
-        
-        .map-card:hover {
-            transform: scale(1.05);
-            border-color: #2ecc71;
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
-        }
-        
-        .map-card.selected {
-            border-color: #3498db;
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
-            animation: selected-pulse 2s infinite;
-        }
-        
-        @keyframes selected-pulse {
-            0%, 100% { 
-                box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
-            }
-            50% { 
-                box-shadow: 0 0 30px rgba(52, 152, 219, 1);
-            }
-        }
-        
-        .map-card img {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-bottom: 2px solid #444;
-        }
-        
-        .map-card-name {
-            padding: 12px;
-            text-align: center;
-            font-size: 13px;
-            text-transform: uppercase;
+            font-size: 16px;
             font-weight: bold;
-            background: #2a2a2a;
+            background: #1a1a1a;
+            border: 2px solid #333;
+        }
+        
+        .status-blue { 
+            color: #3498db;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        .status-red { 
+            color: #e74c3c;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        .status-ready { 
+            color: #2ecc71 !important;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+        }
+        .status-waiting { 
+            color: #f39c12 !important;
         }
         
         .draft-container {
@@ -325,6 +184,13 @@
             color: #666;
             font-weight: bold;
             transition: all 0.3s;
+            overflow: hidden;
+        }
+        
+        .ban-slot.has-brawler {
+            border-style: solid;
+            border-color: #e74c3c;
+            background: #333;
         }
         
         .ban-slot img {
@@ -521,6 +387,180 @@
             transform: none !important;
         }
         
+        .map-section {
+            background: #222;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 2px solid #444;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        
+        .map-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .map-image-container {
+            width: 512px;
+            height: 779px;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 5px solid #555;
+            background: #1a1a1a;
+        }
+        
+        .map-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s;
+        }
+        
+        .map-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .mode-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            background: #1a1a1a;
+        }
+        
+        .mode-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+        
+        .map-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f39c12;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .mode-name {
+            font-size: 24px;
+            color: #3498db;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .map-selector {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border: 2px solid #444;
+            transition: all 0.3s;
+        }
+        
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .mode-tab {
+            padding: 12px 24px;
+            background: #333;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        
+        .mode-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+        
+        .mode-tab.active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-color: #3498db;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+        }
+        
+        .maps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #222;
+            border-radius: 10px;
+        }
+        
+        .map-card {
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+        
+        .map-card:hover {
+            transform: scale(1.05);
+            border-color: #2ecc71;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .map-card.selected {
+            border-color: #3498db;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
+            animation: selected-pulse 2s infinite;
+        }
+        
+        @keyframes selected-pulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(52, 152, 219, 1);
+            }
+        }
+        
+        .map-card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-bottom: 2px solid #444;
+        }
+        
+        .map-card-name {
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            text-transform: uppercase;
+            font-weight: bold;
+            background: #2a2a2a;
+        }
+        
         .notification {
             position: fixed;
             top: 25px;
@@ -576,40 +616,6 @@
             background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.2)); 
             color: #9b59b6;
             border: 2px solid #9b59b6;
-        }
-        
-        .ready-status {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            margin-bottom: 20px;
-        }
-        
-        .status-blue { 
-            color: #3498db;
-            padding: 10px 20px;
-            border-radius: 8px;
-            background: rgba(52, 152, 219, 0.1);
-        }
-        .status-red { 
-            color: #e74c3c;
-            padding: 10px 20px;
-            border-radius: 8px;
-            background: rgba(231, 76, 60, 0.1);
-        }
-        .status-ready { 
-            color: #2ecc71 !important;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
-        }
-        .status-waiting { 
-            color: #f39c12 !important;
         }
         
         /* Полоса прокрутки */
@@ -737,62 +743,6 @@
         
         <div class="role-info" id="role-info">Загрузка...</div>
         
-        <!-- Отображение выбранной карты -->
-        <div class="map-section" id="map-section">
-            <h3 style="font-size: 24px; margin-bottom: 10px; color: #f39c12;">ВЫБРАННАЯ КАРТА</h3>
-            <div class="map-container" id="map-container">
-                <div class="map-image-container" id="map-image-container">
-                    <img src="" class="map-image" id="map-image" style="display: none;">
-                    <div id="map-placeholder" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 20px; flex-direction: column; gap: 15px;">
-                        <div>🗺️ Карта не выбрана</div>
-                        <div style="font-size: 16px; color: #999;">Администратор выберет карту</div>
-                    </div>
-                </div>
-                <div class="map-info" id="map-info">
-                    <div class="map-name" id="map-name">—</div>
-                    <div class="mode-name" id="mode-name">—</div>
-                    <div class="mode-icon" id="mode-icon">
-                        <div id="mode-placeholder" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 40px;">
-                            ?
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Выбор карты (только для админа) -->
-            <div class="map-selector" id="map-selector" style="display: none;">
-                <h3 style="font-size: 24px; margin-bottom: 20px; color: #9b59b6;">👑 ВЫБОР КАРТЫ (ТОЛЬКО ДЛЯ АДМИНА)</h3>
-                <div class="auto-warning" id="auto-warning" style="display: none;">
-                    ⚠️ 40 секунд на все баны! 40 секунд на каждый пик!
-                </div>
-                <div class="mode-tabs" id="mode-tabs">
-                    <!-- Вкладки режимов будут созданы динамически -->
-                </div>
-                <div class="maps-grid" id="maps-grid">
-                    <!-- Карты будут загружены динамически -->
-                </div>
-                <div class="controls" style="margin-top: 25px;">
-                    <button class="btn btn-select" onclick="selectMap()" id="select-map-btn">🗺️ ВЫБРАТЬ КАРТУ</button>
-                    <button class="btn btn-reset" onclick="resetDraft()" id="admin-reset-btn">🔄 СБРОСИТЬ ДРАФТ</button>
-                </div>
-            </div>
-            
-            <!-- Инструкция для админа -->
-            <div class="instructions" id="admin-instructions" style="display: none;">
-                <h3>📋 ИНСТРУКЦИЯ ДЛЯ АДМИНИСТРАТОРА</h3>
-                <ul>
-                    <li>1. Выберите режим игры (вкладка выше)</li>
-                    <li>2. Выберите конкретную карту из списка</li>
-                    <li>3. Нажмите "ВЫБРАТЬ КАРТУ" - карта появится у всех участников</li>
-                    <li>4. Когда команды будут готовы, они нажмут "ГОТОВ" на своих страницах</li>
-                    <li>5. Драфт начнется автоматически: 40 секунд на все баны</li>
-                    <li>6. После банов: 40 секунд на каждый пик по очереди</li>
-                    <li>7. Не успели? Система выберет случайного бравлера!</li>
-                    <li>8. Используйте "СБРОСИТЬ ДРАФТ" для начала нового матча</li>
-                </ul>
-            </div>
-        </div>
-        
         <!-- Статус готовности команд -->
         <div class="ready-status" id="ready-status">
             <div class="status-blue" id="blue-status">
@@ -803,6 +753,7 @@
             </div>
         </div>
         
+        <!-- Основной блок драфта -->
         <div class="draft-container">
             <!-- Синяя команда -->
             <div class="team-side team-blue">
@@ -883,6 +834,62 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Блок с картой (перемещен вниз) -->
+        <div class="map-section" id="map-section">
+            <h3 style="font-size: 24px; margin-bottom: 10px; color: #f39c12;">ВЫБРАННАЯ КАРТА</h3>
+            <div class="map-container" id="map-container">
+                <div class="map-image-container" id="map-image-container">
+                    <img src="" class="map-image" id="map-image" style="display: none;">
+                    <div id="map-placeholder" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 20px; flex-direction: column; gap: 15px;">
+                        <div>🗺️ Карта не выбрана</div>
+                        <div style="font-size: 16px; color: #999;">Администратор выберет карту</div>
+                    </div>
+                </div>
+                <div class="map-info" id="map-info">
+                    <div class="map-name" id="map-name">—</div>
+                    <div class="mode-name" id="mode-name">—</div>
+                    <div class="mode-icon" id="mode-icon">
+                        <div id="mode-placeholder" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 40px;">
+                            ?
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Выбор карты (только для админа) -->
+            <div class="map-selector" id="map-selector" style="display: none;">
+                <h3 style="font-size: 24px; margin-bottom: 20px; color: #9b59b6;">👑 ВЫБОР КАРТЫ (ТОЛЬКО ДЛЯ АДМИНА)</h3>
+                <div class="auto-warning" id="auto-warning" style="display: none;">
+                    ⚠️ 40 секунд на все баны! 40 секунд на каждый пик!
+                </div>
+                <div class="mode-tabs" id="mode-tabs">
+                    <!-- Вкладки режимов будут созданы динамически -->
+                </div>
+                <div class="maps-grid" id="maps-grid">
+                    <!-- Карты будут загружены динамически -->
+                </div>
+                <div class="controls" style="margin-top: 25px;">
+                    <button class="btn btn-select" onclick="selectMap()" id="select-map-btn">🗺️ ВЫБРАТЬ КАРТУ</button>
+                    <button class="btn btn-reset" onclick="resetDraft()" id="admin-reset-btn">🔄 СБРОСИТЬ ДРАФТ</button>
+                </div>
+            </div>
+            
+            <!-- Инструкция для админа -->
+            <div class="instructions" id="admin-instructions" style="display: none;">
+                <h3>📋 ИНСТРУКЦИЯ ДЛЯ АДМИНИСТРАТОРА</h3>
+                <ul>
+                    <li>1. Выберите режим игры (вкладка выше)</li>
+                    <li>2. Выберите конкретную карту из списка</li>
+                    <li>3. Нажмите "ВЫБРАТЬ КАРТУ" - карта появится у всех участников</li>
+                    <li>4. Когда команды будут готовы, они нажмут "ГОТОВ" на своих страницах</li>
+                    <li>5. Драфт начнется автоматически: 40 секунд на все баны</li>
+                    <li>6. После банов: 40 секунд на каждый пик по очереди</li>
+                    <li>7. Не успели? Система выберет случайного бравлера!</li>
+                    <li>8. Используйте "СБРОСИТЬ ДРАФТ" для начала нового матча</li>
+                </ul>
+            </div>
+        </div>
     </div>
     
     <div id="notification-container"></div>
@@ -943,8 +950,8 @@
             // Настройка поиска
             elements.search.addEventListener('input', renderBrawlers);
             
-            // Автообновление состояния каждые 1 секунду
-            setInterval(loadState, 1000);
+            // Автообновление состояния каждые 1.5 секунды
+            setInterval(loadState, 1500);
             
             // Таймер фаз
             phaseTimer = setInterval(updatePhaseTimer, 100);
@@ -1141,7 +1148,7 @@
                     draftState = data.state;
                     updateUI();
                     renderBrawlers();
-                    showNotification('🔄 Драфт сброшен! Команды могут начать заново.');
+                    showNotification('🔄 Драфт сброшен! Команды могут начать зановo.');
                     
                     // Разблокируем кнопки готовности
                     if (elements.blueReadyBtn) elements.blueReadyBtn.disabled = false;
@@ -1237,28 +1244,24 @@
             elements.redReady.className = draftState.red_ready ? 'status-ready' : 'status-waiting';
             
             // Обновляем счетчики
-            elements.blueBansCount.textContent = `[${draftState.blue_bans.length}/3]`;
-            elements.redBansCount.textContent = `[${draftState.red_bans.length}/3]`;
-            elements.bluePicksCount.textContent = `[${draftState.blue_picks.length}/3]`;
-            elements.redPicksCount.textContent = `[${draftState.red_picks.length}/3]`;
+            elements.blueBansCount.textContent = `[${draftState.blue_bans ? draftState.blue_bans.length : 0}/3]`;
+            elements.redBansCount.textContent = `[${draftState.red_bans ? draftState.red_bans.length : 0}/3]`;
+            elements.bluePicksCount.textContent = `[${draftState.blue_picks ? draftState.blue_picks.length : 0}/3]`;
+            elements.redPicksCount.textContent = `[${draftState.red_picks ? draftState.red_picks.length : 0}/3]`;
             
             // Обновляем отображение карты
             updateMapDisplay();
             
             // Обновляем таймер автосброса
-            const timerEl = document.getElementById('timer');
             if (draftState.phase === 'finished' && draftState.reset_in) {
-                timerEl.textContent = `⏰ Автосброс через: ${draftState.reset_in} сек`;
-                
+                const resetTime = draftState.reset_in;
                 if (autoResetTimer) {
                     clearInterval(autoResetTimer);
                 }
                 
-                let secondsLeft = draftState.reset_in;
+                let secondsLeft = resetTime;
                 autoResetTimer = setInterval(() => {
                     secondsLeft--;
-                    timerEl.textContent = `⏰ Автосброс через: ${secondsLeft} сек`;
-                    
                     if (secondsLeft <= 0) {
                         clearInterval(autoResetTimer);
                         autoResetTimer = null;
@@ -1266,7 +1269,6 @@
                     }
                 }, 1000);
             } else {
-                timerEl.textContent = '';
                 if (autoResetTimer) {
                     clearInterval(autoResetTimer);
                     autoResetTimer = null;
@@ -1287,6 +1289,7 @@
                 slot.innerHTML = '';
                 slot.style.background = '#444';
                 slot.style.borderStyle = 'dashed';
+                slot.classList.remove('has-brawler');
             });
             
             pickSlots.forEach(slot => {
@@ -1295,35 +1298,40 @@
             });
             
             // Заполняем баны
-            bans.forEach((brawler, index) => {
-                if (index < banSlots.length) {
-                    const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
-                    banSlots[index].innerHTML = `<img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">`;
-                    banSlots[index].style.borderStyle = 'solid';
-                }
-            });
+            if (bans && bans.length > 0) {
+                bans.forEach((brawler, index) => {
+                    if (index < banSlots.length) {
+                        const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
+                        banSlots[index].innerHTML = `<img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">`;
+                        banSlots[index].style.borderStyle = 'solid';
+                        banSlots[index].classList.add('has-brawler');
+                    }
+                });
+            }
             
             // Заполняем пики
-            picks.forEach((brawler, index) => {
-                if (index < pickSlots.length) {
-                    const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
-                    pickSlots[index].innerHTML = `
-                        <img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">
-                        <div class="slot-name">${brawler.toUpperCase()}</div>
-                    `;
-                    
-                    // Подсвечиваем активный слот
-                    if (draftState.phase === 'pick' && 
-                        draftState.current_turn === team && 
-                        index === picks.length) {
-                        pickSlots[index].classList.add('active');
+            if (picks && picks.length > 0) {
+                picks.forEach((brawler, index) => {
+                    if (index < pickSlots.length) {
+                        const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
+                        pickSlots[index].innerHTML = `
+                            <img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">
+                            <div class="slot-name">${brawler.toUpperCase()}</div>
+                        `;
+                        
+                        // Подсвечиваем активный слот
+                        if (draftState && draftState.phase === 'pick' && 
+                            draftState.current_turn === team && 
+                            index === picks.length) {
+                            pickSlots[index].classList.add('active');
+                        }
                     }
-                }
-            });
+                });
+            }
         }
         
         function updateMapDisplay() {
-            if (draftState.selected_map) {
+            if (draftState && draftState.selected_map) {
                 elements.mapName.textContent = draftState.selected_map.name.replace(/_/g, ' ');
                 elements.modeName.textContent = draftState.selected_map.mode.replace(/_/g, ' ');
                 
@@ -1520,7 +1528,7 @@
             }
             
             filteredBrawlers.forEach(brawler => {
-                const isSelected = draftState?.all_selected?.includes(brawler) || false;
+                const isSelected = draftState && draftState.all_selected ? draftState.all_selected.includes(brawler) : false;
                 
                 const card = document.createElement('div');
                 card.className = `brawler-card ${isSelected ? 'disabled' : ''}`;
