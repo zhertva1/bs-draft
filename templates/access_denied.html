@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доступ запрещен - Brawl Stars Draft</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0f0f0f; 
+            color: white; 
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 600px;
+            background: #222;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #e74c3c;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        .message {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 200px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        
+        .info {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            font-size: 14px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔒</div>
+        <h1>ДОСТУП ЗАПРЕЩЕН</h1>
+        <div class="message">{{ message }}</div>
+        
+        <div class="buttons">
+            <a href="/" class="btn btn-primary">👁️ Стать наблюдателем</a>
+            <a href="javascript:location.reload()" class="btn btn-secondary">🔄 Попробовать снова</a>
+        </div>
+        
+        <div class="info">
+            <p>💡 Подсказка: Каждая команда может иметь только одного активного игрока.</p>
+            <p>Место освободится автоматически через 30 секунд бездействия текущего игрока.</p>
+            <p>Если хотите играть, дождитесь освобождения места или станьте наблюдателем.</p>
+        </div>
+    </div>
+</body>
+</html>
