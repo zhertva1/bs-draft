@@ -697,7 +697,6 @@
             }
         }
         
-        /* Инструкция */
         .instructions {
             background: #1a1a1a;
             padding: 20px;
@@ -732,6 +731,12 @@
             background: rgba(243, 156, 18, 0.1);
             border: 2px solid #f39c12;
         }
+        
+        .hidden-ban {
+            background: #333 !important;
+            color: #666 !important;
+            font-size: 24px;
+        }
     </style>
 </head>
 <body>
@@ -743,7 +748,6 @@
         
         <div class="role-info" id="role-info">Загрузка...</div>
         
-        <!-- Статус готовности команд -->
         <div class="ready-status" id="ready-status">
             <div class="status-blue" id="blue-status">
                 СИНЯЯ КОМАНДА: <span id="blue-ready" class="status-waiting">ОЖИДАЕТ</span>
@@ -753,9 +757,7 @@
             </div>
         </div>
         
-        <!-- Основной блок драфта -->
         <div class="draft-container">
-            <!-- Синяя команда -->
             <div class="team-side team-blue">
                 <div class="team-header">🔵 СИНЯЯ КОМАНДА</div>
                 
@@ -777,13 +779,11 @@
                     </div>
                 </div>
                 
-                <!-- Кнопка готовности для синей команды -->
                 <div class="controls" id="blue-controls" style="display: none;">
                     <button class="btn btn-ready" onclick="setReady()" id="blue-ready-btn">✅ ГОТОВ</button>
                 </div>
             </div>
             
-            <!-- Центральная панель выбора бравлеров -->
             <div class="center-panel">
                 <input type="text" class="search-box" id="search" placeholder="🔍 Поиск бравлера..." autocomplete="off">
                 
@@ -791,22 +791,19 @@
                     <!-- Бравлеры будут загружены здесь -->
                 </div>
                 
-                <!-- Инструкция для игроков -->
                 <div class="instructions" id="player-instructions" style="display: none;">
                     <h3>🎮 ИНСТРУКЦИЯ ДЛЯ ИГРОКА</h3>
                     <ul>
-                        <li>1. Нажмите кнопку "ГОТОВ" выше, когда будете готовы к драфту</li>
-                        <li>2. Дождитесь, когда вторая команда также нажмет "ГОТОВ"</li>
-                        <li>3. У вас 40 секунд на все баны (одновременно с противником!)</li>
-                        <li>4. Затем по очереди пики: 40 секунд на каждый выбор</li>
-                        <li>5. Не успеете? Система выберет случайного бравлера!</li>
-                        <li>6. Выбирайте бравлеров кликом по карточкам выше</li>
-                        <li>7. Активный слот подсвечивается зеленой анимацией</li>
+                        <li>1. Нажмите кнопку "ГОТОВ" выше</li>
+                        <li>2. Дождитесь готовности второй команды</li>
+                        <li>3. 40 секунд на все баны (одновременно)</li>
+                        <li>4. 40 секунд на каждый пик по очереди</li>
+                        <li>5. Не успеете - автовыбор</li>
+                        <li>6. Выбирайте бравлеров кликом по карточкам</li>
                     </ul>
                 </div>
             </div>
             
-            <!-- Красная команда -->
             <div class="team-side team-red">
                 <div class="team-header">🔴 КРАСНАЯ КОМАНДА</div>
                 
@@ -828,14 +825,12 @@
                     </div>
                 </div>
                 
-                <!-- Кнопка готовности для красной команды -->
                 <div class="controls" id="red-controls" style="display: none;">
                     <button class="btn btn-ready" onclick="setReady()" id="red-ready-btn">✅ ГОТОВ</button>
                 </div>
             </div>
         </div>
         
-        <!-- Блок с картой (перемещен вниз) -->
         <div class="map-section" id="map-section">
             <h3 style="font-size: 24px; margin-bottom: 10px; color: #f39c12;">ВЫБРАННАЯ КАРТА</h3>
             <div class="map-container" id="map-container">
@@ -843,7 +838,6 @@
                     <img src="" class="map-image" id="map-image" style="display: none;">
                     <div id="map-placeholder" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 20px; flex-direction: column; gap: 15px;">
                         <div>🗺️ Карта не выбрана</div>
-                        <div style="font-size: 16px; color: #999;">Администратор выберет карту</div>
                     </div>
                 </div>
                 <div class="map-info" id="map-info">
@@ -857,36 +851,30 @@
                 </div>
             </div>
             
-            <!-- Выбор карты (только для админа) -->
             <div class="map-selector" id="map-selector" style="display: none;">
                 <h3 style="font-size: 24px; margin-bottom: 20px; color: #9b59b6;">👑 ВЫБОР КАРТЫ (ТОЛЬКО ДЛЯ АДМИНА)</h3>
                 <div class="auto-warning" id="auto-warning" style="display: none;">
                     ⚠️ 40 секунд на все баны! 40 секунд на каждый пик!
                 </div>
-                <div class="mode-tabs" id="mode-tabs">
-                    <!-- Вкладки режимов будут созданы динамически -->
-                </div>
-                <div class="maps-grid" id="maps-grid">
-                    <!-- Карты будут загружены динамически -->
-                </div>
+                <div class="mode-tabs" id="mode-tabs"></div>
+                <div class="maps-grid" id="maps-grid"></div>
                 <div class="controls" style="margin-top: 25px;">
                     <button class="btn btn-select" onclick="selectMap()" id="select-map-btn">🗺️ ВЫБРАТЬ КАРТУ</button>
                     <button class="btn btn-reset" onclick="resetDraft()" id="admin-reset-btn">🔄 СБРОСИТЬ ДРАФТ</button>
                 </div>
             </div>
             
-            <!-- Инструкция для админа -->
             <div class="instructions" id="admin-instructions" style="display: none;">
                 <h3>📋 ИНСТРУКЦИЯ ДЛЯ АДМИНИСТРАТОРА</h3>
                 <ul>
-                    <li>1. Выберите режим игры (вкладка выше)</li>
-                    <li>2. Выберите конкретную карту из списка</li>
-                    <li>3. Нажмите "ВЫБРАТЬ КАРТУ" - карта появится у всех участников</li>
-                    <li>4. Когда команды будут готовы, они нажмут "ГОТОВ" на своих страницах</li>
-                    <li>5. Драфт начнется автоматически: 40 секунд на все баны</li>
-                    <li>6. После банов: 40 секунд на каждый пик по очереди</li>
-                    <li>7. Не успели? Система выберет случайного бравлера!</li>
-                    <li>8. Используйте "СБРОСИТЬ ДРАФТ" для начала нового матча</li>
+                    <li>1. Выберите режим игры</li>
+                    <li>2. Выберите карту</li>
+                    <li>3. Нажмите "ВЫБРАТЬ КАРТУ"</li>
+                    <li>4. Команды нажимают "ГОТОВ"</li>
+                    <li>5. Драфт начинается: 40 секунд на баны</li>
+                    <li>6. Затем 40 секунд на каждый пик</li>
+                    <li>7. Не успели - автовыбор</li>
+                    <li>8. Используйте "СБРОСИТЬ ДРАФТ" для нового матча</li>
                 </ul>
             </div>
         </div>
@@ -895,19 +883,17 @@
     <div id="notification-container"></div>
     
     <script>
-        // Глобальные переменные
         let currentRole = '{{ role }}';
         let brawlers = [];
         let draftState = null;
-        let autoResetTimer = null;
-        let phaseTimer = null;
         let availableMaps = {};
         let selectedMap = null;
         let selectedMode = null;
-        let currentMapImage = null;
-        let currentModeImage = null;
+        let lastUpdateTime = 0;
+        let localTimer = null;
+        let localTimeLeft = null;
+        let localTimerStart = null;
         
-        // Элементы DOM
         const elements = {
             header: document.getElementById('header'),
             status: document.getElementById('status'),
@@ -942,21 +928,14 @@
             redPicksCount: document.getElementById('red-picks-count')
         };
         
-        // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             updateRoleInfo();
             loadState();
             
-            // Настройка поиска
             elements.search.addEventListener('input', renderBrawlers);
             
-            // Автообновление состояния каждые 1.5 секунды
-            setInterval(loadState, 1500);
+            setInterval(loadState, 1000);
             
-            // Таймер фаз
-            phaseTimer = setInterval(updatePhaseTimer, 100);
-            
-            // Показать инструкции
             setTimeout(() => {
                 if (currentRole === 'admin') {
                     elements.adminInstructions.style.display = 'block';
@@ -992,7 +971,6 @@
             elements.roleInfo.textContent = roleText;
             elements.roleInfo.className = 'role-info ' + roleClass;
             
-            // Показываем/скрываем элементы в зависимости от роли
             elements.blueControls.style.display = currentRole === 'blue' ? 'flex' : 'none';
             elements.redControls.style.display = currentRole === 'red' ? 'flex' : 'none';
             elements.mapSelector.style.display = currentRole === 'admin' ? 'block' : 'none';
@@ -1000,85 +978,91 @@
         
         async function loadState() {
             try {
-                const response = await fetch(`/api/state?role=${currentRole}&t=${Date.now()}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
+                const now = Date.now();
+                if (now - lastUpdateTime < 900 && draftState) return;
+                lastUpdateTime = now;
                 
+                const response = await fetch(`/api/state?role=${currentRole}&t=${now}`);
+                if (!response.ok) return;
+                
+                const data = await response.json();
                 if (data.success) {
                     draftState = data.state;
                     brawlers = data.brawlers || [];
                     
-                    // Если у нас еще нет карт и мы админ - загружаем карты
                     if (currentRole === 'admin' && Object.keys(availableMaps).length === 0 && data.maps) {
                         availableMaps = data.maps;
                         renderModeTabs();
                     }
                     
                     updateUI();
-                    updatePhaseTimer();
                     renderBrawlers();
-                } else {
-                    console.error('Ошибка загрузки состояния:', data.error);
+                    
+                    if (draftState.time_left !== null && draftState.time_left !== undefined) {
+                        startLocalTimer(draftState.time_left);
+                    } else {
+                        stopLocalTimer();
+                    }
                 }
             } catch (error) {
-                console.error('Ошибка загрузки состояния:', error);
+                console.error('Ошибка загрузки:', error);
             }
         }
         
-        function updatePhaseTimer() {
-            if (!draftState || !draftState.time_left && draftState.time_left !== 0) {
+        function startLocalTimer(initialTime) {
+            stopLocalTimer();
+            
+            localTimeLeft = initialTime;
+            localTimerStart = Date.now();
+            
+            updateTimerDisplay();
+            
+            localTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - localTimerStart) / 1000);
+                localTimeLeft = Math.max(0, initialTime - elapsed);
+                updateTimerDisplay();
+                
+                if (localTimeLeft <= 0) {
+                    stopLocalTimer();
+                    loadState();
+                }
+            }, 100);
+        }
+        
+        function stopLocalTimer() {
+            if (localTimer) {
+                clearInterval(localTimer);
+                localTimer = null;
+            }
+        }
+        
+        function updateTimerDisplay() {
+            if (localTimeLeft === null || localTimeLeft === undefined) {
                 elements.timerDisplay.textContent = '⏱️ --:--';
                 elements.timerDisplay.classList.remove('timer-warning', 'timer-danger');
                 return;
             }
             
-            const timeLeft = draftState.time_left;
-            
-            if (timeLeft === null) {
-                elements.timerDisplay.textContent = '⏱️ --:--';
-                elements.timerDisplay.classList.remove('timer-warning', 'timer-danger');
-                return;
-            }
-            
-            // Форматируем время
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
+            const minutes = Math.floor(localTimeLeft / 60);
+            const seconds = localTimeLeft % 60;
             const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
-            // Определяем статус таймера
             elements.timerDisplay.classList.remove('timer-warning', 'timer-danger');
             
-            if (timeLeft <= 10) {
+            if (localTimeLeft <= 10) {
                 elements.timerDisplay.classList.add('timer-danger');
                 elements.timerDisplay.textContent = `⏰ ${timeStr}`;
-            } else if (timeLeft <= 20) {
+            } else if (localTimeLeft <= 20) {
                 elements.timerDisplay.classList.add('timer-warning');
                 elements.timerDisplay.textContent = `⏱️ ${timeStr}`;
             } else {
                 elements.timerDisplay.textContent = `⏱️ ${timeStr}`;
-            }
-            
-            // Обновляем заголовок в зависимости от фазы
-            let phaseText = '';
-            if (draftState.phase === 'ban') {
-                phaseText = `БАНЫ: ${timeStr}`;
-            } else if (draftState.phase === 'pick') {
-                const pickNum = draftState.current_pick_index + 1;
-                const team = draftState.current_turn === 'blue' ? 'СИНИЕ' : 'КРАСНЫЕ';
-                phaseText = `ПИК ${pickNum}/6 (${team}): ${timeStr}`;
-            }
-            
-            if (phaseText) {
-                elements.timerDisplay.title = phaseText;
             }
         }
         
         async function setReady() {
             if (currentRole !== 'blue' && currentRole !== 'red') return;
             
-            // Блокируем кнопку
             const btn = currentRole === 'blue' ? elements.blueReadyBtn : elements.redReadyBtn;
             const originalText = btn.textContent;
             btn.disabled = true;
@@ -1096,9 +1080,7 @@
                     })
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error('Network error');
                 
                 const data = await response.json();
                 
@@ -1112,8 +1094,7 @@
                     btn.textContent = originalText;
                 }
             } catch (error) {
-                console.error('Ошибка установки готовности:', error);
-                showNotification('❌ Ошибка соединения. Проверьте сервер.');
+                showNotification('❌ Ошибка соединения');
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
@@ -1125,9 +1106,7 @@
                 return;
             }
             
-            if (!confirm('🔄 Сбросить драфт? Все текущие выборы будут потеряны.')) {
-                return;
-            }
+            if (!confirm('Сбросить драфт?')) return;
             
             try {
                 const response = await fetch('/api/reset', {
@@ -1138,9 +1117,7 @@
                     }
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error('Network error');
                 
                 const data = await response.json();
                 
@@ -1148,22 +1125,17 @@
                     draftState = data.state;
                     updateUI();
                     renderBrawlers();
-                    showNotification('🔄 Драфт сброшен! Команды могут начать зановo.');
+                    showNotification('🔄 Драфт сброшен!');
                     
-                    // Разблокируем кнопки готовности
                     if (elements.blueReadyBtn) elements.blueReadyBtn.disabled = false;
                     if (elements.redReadyBtn) elements.redReadyBtn.disabled = false;
                     
-                    if (autoResetTimer) {
-                        clearInterval(autoResetTimer);
-                        autoResetTimer = null;
-                    }
+                    stopLocalTimer();
                 } else {
-                    showNotification('❌ ' + (data.error || 'Ошибка сброса'));
+                    showNotification('❌ ' + (data.error || 'Ошибка'));
                 }
             } catch (error) {
-                console.error('Ошибка сброса драфта:', error);
-                showNotification('❌ Ошибка соединения при сбросе');
+                showNotification('❌ Ошибка соединения');
             }
         }
         
@@ -1186,9 +1158,7 @@
                     })
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error('Network error');
                 
                 const data = await response.json();
                 
@@ -1197,24 +1167,26 @@
                     updateUI();
                     renderBrawlers();
                     showNotification(`✅ Вы выбрали: ${brawler}`);
+                    
+                    if (draftState.time_left !== null && draftState.time_left !== undefined) {
+                        startLocalTimer(draftState.time_left);
+                    }
                 } else {
                     if (data.auto_reset) {
-                        showNotification('⏰ Драфт был автоматически сброшен через 1 минуту');
+                        showNotification('⏰ Драфт был автоматически сброшен');
                         loadState();
                     } else {
                         showNotification('❌ ' + (data.error || 'Ошибка выбора'));
                     }
                 }
             } catch (error) {
-                console.error('Ошибка выбора бравлера:', error);
-                showNotification('❌ Ошибка соединения с сервером');
+                showNotification('❌ Ошибка соединения');
             }
         }
         
         function updateUI() {
             if (!draftState) return;
             
-            // Обновляем статус
             let statusText = '';
             
             switch(draftState.phase) {
@@ -1236,46 +1208,18 @@
             
             elements.status.textContent = statusText;
             
-            // Обновляем статус готовности команд
             elements.blueReady.textContent = draftState.blue_ready ? 'ГОТОВ' : 'ОЖИДАЕТ';
             elements.blueReady.className = draftState.blue_ready ? 'status-ready' : 'status-waiting';
             
             elements.redReady.textContent = draftState.red_ready ? 'ГОТОВ' : 'ОЖИДАЕТ';
             elements.redReady.className = draftState.red_ready ? 'status-ready' : 'status-waiting';
             
-            // Обновляем счетчики
             elements.blueBansCount.textContent = `[${draftState.blue_bans ? draftState.blue_bans.length : 0}/3]`;
             elements.redBansCount.textContent = `[${draftState.red_bans ? draftState.red_bans.length : 0}/3]`;
             elements.bluePicksCount.textContent = `[${draftState.blue_picks ? draftState.blue_picks.length : 0}/3]`;
             elements.redPicksCount.textContent = `[${draftState.red_picks ? draftState.red_picks.length : 0}/3]`;
             
-            // Обновляем отображение карты
             updateMapDisplay();
-            
-            // Обновляем таймер автосброса
-            if (draftState.phase === 'finished' && draftState.reset_in) {
-                const resetTime = draftState.reset_in;
-                if (autoResetTimer) {
-                    clearInterval(autoResetTimer);
-                }
-                
-                let secondsLeft = resetTime;
-                autoResetTimer = setInterval(() => {
-                    secondsLeft--;
-                    if (secondsLeft <= 0) {
-                        clearInterval(autoResetTimer);
-                        autoResetTimer = null;
-                        loadState();
-                    }
-                }, 1000);
-            } else {
-                if (autoResetTimer) {
-                    clearInterval(autoResetTimer);
-                    autoResetTimer = null;
-                }
-            }
-            
-            // Обновляем слоты команд
             updateTeamSlots('blue', draftState.blue_bans, draftState.blue_picks);
             updateTeamSlots('red', draftState.red_bans, draftState.red_picks);
         }
@@ -1284,12 +1228,11 @@
             const banSlots = document.querySelectorAll(`#${team}-bans .ban-slot`);
             const pickSlots = document.querySelectorAll(`#${team}-picks .pick-slot`);
             
-            // Очищаем все слоты
             banSlots.forEach(slot => {
                 slot.innerHTML = '';
                 slot.style.background = '#444';
                 slot.style.borderStyle = 'dashed';
-                slot.classList.remove('has-brawler');
+                slot.classList.remove('has-brawler', 'hidden-ban');
             });
             
             pickSlots.forEach(slot => {
@@ -1297,29 +1240,31 @@
                 slot.classList.remove('active');
             });
             
-            // Заполняем баны
             if (bans && bans.length > 0) {
                 bans.forEach((brawler, index) => {
                     if (index < banSlots.length) {
-                        const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
-                        banSlots[index].innerHTML = `<img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">`;
-                        banSlots[index].style.borderStyle = 'solid';
-                        banSlots[index].classList.add('has-brawler');
+                        if (brawler === 'hidden') {
+                            banSlots[index].innerHTML = '?';
+                            banSlots[index].classList.add('hidden-ban');
+                        } else {
+                            const imgUrl = `/static/brawler_images/${encodeURIComponent(brawler)}.png?t=${Date.now()}`;
+                            banSlots[index].innerHTML = `<img src="${imgUrl}" alt="${brawler}" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">❓</text></svg>'">`;
+                            banSlots[index].style.borderStyle = 'solid';
+                            banSlots[index].classList.add('has-brawler');
+                        }
                     }
                 });
             }
             
-            // Заполняем пики
             if (picks && picks.length > 0) {
                 picks.forEach((brawler, index) => {
                     if (index < pickSlots.length) {
-                        const imgUrl = `/static/brawler_images/${brawler}.png?t=${Date.now()}`;
+                        const imgUrl = `/static/brawler_images/${encodeURIComponent(brawler)}.png?t=${Date.now()}`;
                         pickSlots[index].innerHTML = `
-                            <img src="${imgUrl}" alt="${brawler}" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>'">
+                            <img src="${imgUrl}" alt="${brawler}" onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"90\">❓</text></svg>'; this.onerror=null;">
                             <div class="slot-name">${brawler.toUpperCase()}</div>
                         `;
                         
-                        // Подсвечиваем активный слот
                         if (draftState && draftState.phase === 'pick' && 
                             draftState.current_turn === team && 
                             index === picks.length) {
@@ -1335,40 +1280,20 @@
                 elements.mapName.textContent = draftState.selected_map.name.replace(/_/g, ' ');
                 elements.modeName.textContent = draftState.selected_map.mode.replace(/_/g, ' ');
                 
-                // Устанавливаем картинку карты (без мигания)
                 const mapUrl = `/static/mappool/${draftState.selected_map.mode}/${draftState.selected_map.file}?t=${Date.now()}`;
-                if (mapUrl !== currentMapImage) {
-                    currentMapImage = mapUrl;
-                    elements.mapImage.src = mapUrl;
-                    elements.mapImage.style.display = 'block';
-                    elements.mapPlaceholder.style.display = 'none';
-                    
-                    elements.mapImage.onerror = () => {
-                        elements.mapImage.style.display = 'none';
-                        elements.mapPlaceholder.style.display = 'flex';
-                    };
-                }
+                elements.mapImage.src = mapUrl;
+                elements.mapImage.style.display = 'block';
+                elements.mapPlaceholder.style.display = 'none';
                 
-                // Устанавливаем иконку режима (без мигания)
                 const modeUrl = `/static/modes/${draftState.selected_map.mode}.png?t=${Date.now()}`;
-                if (modeUrl !== currentModeImage) {
-                    currentModeImage = modeUrl;
-                    elements.modePlaceholder.style.display = 'none';
-                    elements.modeIcon.innerHTML = `<img src="${modeUrl}" alt="${draftState.selected_map.mode}">`;
-                    
-                    elements.modeIcon.querySelector('img').onerror = () => {
-                        elements.modePlaceholder.style.display = 'flex';
-                        elements.modeIcon.innerHTML = '<div id="mode-placeholder" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 40px;">?</div>';
-                    };
-                }
+                elements.modePlaceholder.style.display = 'none';
+                elements.modeIcon.innerHTML = `<img src="${modeUrl}" alt="${draftState.selected_map.mode}">`;
             } else {
                 elements.mapImage.style.display = 'none';
                 elements.mapPlaceholder.style.display = 'flex';
                 elements.modePlaceholder.style.display = 'flex';
                 elements.mapName.textContent = '—';
                 elements.modeName.textContent = '—';
-                currentMapImage = null;
-                currentModeImage = null;
             }
         }
         
@@ -1380,11 +1305,8 @@
                 tab.className = `mode-tab ${index === 0 ? 'active' : ''}`;
                 tab.textContent = mode.replace(/_/g, ' ');
                 tab.onclick = () => {
-                    // Убираем активный класс у всех вкладок
                     document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-                    // Добавляем активный класс текущей вкладке
                     tab.classList.add('active');
-                    // Рендерим карты для выбранного режима
                     selectedMode = mode;
                     renderMapsForMode(mode);
                 };
@@ -1392,7 +1314,6 @@
                 elements.modeTabs.appendChild(tab);
             });
             
-            // Рендерим карты для первого режима
             if (Object.keys(availableMaps).length > 0) {
                 selectedMode = Object.keys(availableMaps)[0];
                 renderMapsForMode(selectedMode);
@@ -1409,30 +1330,20 @@
                     mapCard.innerHTML = `
                         <img src="/static/mappool/${mode}/${mapInfo.file}?t=${Date.now()}" 
                              alt="${mapInfo.name}"
-                             onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 140%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22#333%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22>${mapInfo.name}</text></svg>'">
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 140\"><rect width=\"100%\" height=\"100%\" fill=\"#333\"/><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" dy=\".3em\" fill=\"white\">${mapInfo.name}</text></svg>'">
                         <div class="map-card-name">${mapInfo.name.replace(/_/g, ' ')}</div>
                     `;
                     
                     mapCard.onclick = () => {
-                        // Убираем выделение у всех карт
                         document.querySelectorAll('.map-card').forEach(card => {
                             card.classList.remove('selected');
                         });
-                        // Выделяем выбранную карту
                         mapCard.classList.add('selected');
                         selectedMap = mapInfo.name;
                     };
                     
                     elements.mapsGrid.appendChild(mapCard);
                 });
-            } else {
-                elements.mapsGrid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
-                        <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
-                        <div>Нет карт для режима "${mode}"</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Добавьте PNG файлы в static/mappool/${mode}/</div>
-                    </div>
-                `;
             }
         }
         
@@ -1447,7 +1358,6 @@
                 return;
             }
             
-            // Блокируем кнопку на время запроса
             const btn = elements.selectMapBtn;
             const originalText = btn.textContent;
             btn.disabled = true;
@@ -1466,9 +1376,7 @@
                     })
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error('Network error');
                 
                 const data = await response.json();
                 
@@ -1477,7 +1385,6 @@
                     updateUI();
                     showNotification(`🗺️ Карта "${selectedMap}" выбрана!`);
                     
-                    // Снимаем выделение с карты
                     selectedMap = null;
                     document.querySelectorAll('.map-card').forEach(card => {
                         card.classList.remove('selected');
@@ -1486,10 +1393,8 @@
                     showNotification('❌ ' + (data.error || 'Ошибка выбора карты'));
                 }
             } catch (error) {
-                console.error('Ошибка выбора карты:', error);
-                showNotification('❌ Ошибка соединения при выборе карты');
+                showNotification('❌ Ошибка соединения');
             } finally {
-                // Разблокируем кнопку
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
@@ -1499,31 +1404,19 @@
             elements.brawlersGrid.innerHTML = '';
             
             if (!brawlers.length) {
-                elements.brawlersGrid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
-                        <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
-                        <div>Загрузка бравлеров...</div>
-                    </div>
-                `;
+                elements.brawlersGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">Загрузка бравлеров...</div>';
                 return;
             }
             
-            // Фильтрация по поиску
             const searchQuery = elements.search.value.toLowerCase();
-            
             let filteredBrawlers = brawlers;
+            
             if (searchQuery) {
                 filteredBrawlers = brawlers.filter(b => b.toLowerCase().includes(searchQuery));
             }
             
             if (filteredBrawlers.length === 0) {
-                elements.brawlersGrid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
-                        <div style="font-size: 24px; margin-bottom: 10px;">🔍</div>
-                        <div>Бравлеры не найдены</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Попробуйте другой запрос</div>
-                    </div>
-                `;
+                elements.brawlersGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">Бравлеры не найдены</div>';
                 return;
             }
             
@@ -1533,17 +1426,14 @@
                 const card = document.createElement('div');
                 card.className = `brawler-card ${isSelected ? 'disabled' : ''}`;
                 card.innerHTML = `
-                    <img src="/static/brawler_images/${brawler}.png?t=${Date.now()}" 
+                    <img src="/static/brawler_images/${encodeURIComponent(brawler)}.png?t=${Date.now()}" 
                          alt="${brawler}"
-                         onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22#333%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22>${brawler.charAt(0)}</text></svg>'">
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"45\" fill=\"#333\"/><text x=\"50\" y=\"55\" text-anchor=\"middle\" fill=\"white\" font-size=\"20\">${brawler.charAt(0)}</text></svg>'">
                     <div class="brawler-name">${brawler}</div>
                 `;
                 
                 if (!isSelected && (currentRole === 'blue' || currentRole === 'red')) {
                     card.onclick = () => selectBrawler(brawler);
-                } else if (isSelected) {
-                    card.style.cursor = 'not-allowed';
-                    card.title = 'Уже выбран';
                 }
                 
                 elements.brawlersGrid.appendChild(card);
