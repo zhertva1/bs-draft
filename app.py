@@ -28,6 +28,7 @@ def get_brawlers_list():
     return sorted(brawlers, key=lambda x: x.lower())
 
 BRWLERS = get_brawlers_list()
+print(f"✅ Загружено бравлеров: {len(BRWLERS)}")
 
 # Получаем список карт по режимам
 def get_maps_by_mode():
@@ -47,6 +48,7 @@ def get_maps_by_mode():
                             'file': map_file,
                             'mode': mode_folder
                         })
+                print(f"✅ Режим '{mode_folder}': {len(maps[mode_folder])} карт")
     
     return maps
 
@@ -79,7 +81,7 @@ def get_or_create_state():
             'timer_active': False,
             'auto_bans_done': False,
             'auto_picks_done': [False, False, False, False, False, False],
-            'bans_completed': False  # Флаг завершения банов
+            'bans_completed': False
         }
     
     return 'main', draft_states['main']
@@ -448,7 +450,12 @@ def select_map():
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
-    return send_from_directory('static', filename)
+    response = send_from_directory('static', filename)
+    # Добавляем заголовки кэширования для изображений
+    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+        response.headers['Cache-Control'] = 'public, max-age=31536000'
+        response.headers['Expires'] = (datetime.utcnow() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
+    return response
 
 @app.route('/test')
 def test_page():
