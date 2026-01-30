@@ -239,6 +239,9 @@
             text-transform: uppercase;
             font-weight: bold;
             letter-spacing: 0.5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 5px;
         }
         
         /* Драфт контейнер с командами и картой по центру */
@@ -379,9 +382,11 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             border-top: 2px solid #444;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
-        /* Центральная карта (между командами) */
+        /* Центральная карта (увеличенная) */
         .center-map-section {
             flex: 1;
             background: #222;
@@ -405,8 +410,8 @@
         }
         
         .map-image-container-center {
-            width: 300px;
-            height: 456px;
+            width: 450px;
+            height: 600px;
             position: relative;
             border-radius: 12px;
             overflow: hidden;
@@ -428,13 +433,16 @@
         }
         
         .mode-icon-center {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             overflow: hidden;
             border: 3px solid #fff;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .mode-icon-center img {
@@ -445,17 +453,21 @@
         }
         
         .map-name-center {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             color: #f39c12;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            padding: 0 10px;
+            text-align: center;
         }
         
         .mode-name-center {
-            font-size: 16px;
+            font-size: 18px;
             color: #3498db;
             text-transform: uppercase;
             font-weight: bold;
+            padding: 0 10px;
+            text-align: center;
         }
         
         .controls {
@@ -615,6 +627,8 @@
             text-transform: uppercase;
             font-weight: bold;
             background: #2a2a2a;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .notification {
@@ -684,7 +698,7 @@
             
             .map-image-container-center {
                 width: 90%;
-                height: 350px;
+                height: 500px;
             }
         }
         
@@ -702,6 +716,10 @@
             .btn {
                 width: 100%;
                 min-width: unset;
+            }
+            
+            .map-image-container-center {
+                height: 350px;
             }
         }
         
@@ -883,6 +901,7 @@
                 <div class="controls" style="margin-top: 25px;">
                     <button class="btn btn-select" onclick="selectMap()" id="select-map-btn">🗺️ ВЫБРАТЬ КАРТУ</button>
                     <button class="btn btn-reset" onclick="resetDraft()" id="admin-reset-btn">🔄 СБРОСИТЬ ДРАФТ</button>
+                    <button class="btn btn-ready" onclick="newDraft()" id="new-draft-btn">🆕 НОВЫЙ ДРАФТ</button>
                 </div>
             </div>
             
@@ -896,7 +915,8 @@
                     <li>5. Драфт начнется автоматически: 40 секунд на все баны</li>
                     <li>6. После банов: 40 секунд на каждый пик по очереди</li>
                     <li>7. Не успели? Система выберет случайного бравлера!</li>
-                    <li>8. Используйте "СБРОСИТЬ ДРАФТ" для начала нового матча</li>
+                    <li>8. Используйте "НОВЫЙ ДРАФТ" для начала нового матча (карта сохраняется)</li>
+                    <li>9. Используйте "СБРОСИТЬ ДРАФТ" для полного сброса (включая карту)</li>
                 </ul>
             </div>
         </div>
@@ -919,6 +939,7 @@
         let localTimeLeft = null;
         let localTimerStart = null;
         let brawlerImageCache = new Map();
+        let modeImageCache = new Map();
         
         const elements = {
             header: document.getElementById('header'),
@@ -936,6 +957,7 @@
             playerInstructions: document.getElementById('player-instructions'),
             selectMapBtn: document.getElementById('select-map-btn'),
             adminResetBtn: document.getElementById('admin-reset-btn'),
+            newDraftBtn: document.getElementById('new-draft-btn'),
             blueReadyBtn: document.getElementById('blue-ready-btn'),
             redReadyBtn: document.getElementById('red-ready-btn'),
             autoWarning: document.getElementById('auto-warning'),
@@ -949,17 +971,43 @@
             centerModeName: document.getElementById('center-mode-name'),
             centerModeIcon: document.getElementById('center-mode-icon'),
             centerModePlaceholder: document.getElementById('center-mode-placeholder'),
+            centerModeImage: null,
             modeTabs: document.getElementById('mode-tabs'),
             mapsGrid: document.getElementById('maps-grid'),
             imagePreloader: document.getElementById('image-preloader')
         };
         
+        // Создаем изображение для иконки режима
+        function createModeImageElement() {
+            if (!elements.centerModeImage) {
+                elements.centerModeImage = document.createElement('img');
+                elements.centerModeImage.style.display = 'none';
+                elements.centerModeIcon.appendChild(elements.centerModeImage);
+            }
+            return elements.centerModeImage;
+        }
+        
+        // Предзагрузка изображений режимов
+        function preloadModeImages() {
+            if (!availableMaps || Object.keys(availableMaps).length === 0) return;
+            
+            Object.keys(availableMaps).forEach(mode => {
+                const img = new Image();
+                img.src = `/static/modes/${mode}.png`;
+                img.onload = () => {
+                    modeImageCache.set(mode, img.src);
+                };
+                img.onerror = () => {
+                    console.warn(`Не удалось загрузить иконку режима: ${mode}`);
+                };
+            });
+        }
+        
         // Предзагрузка изображений бравлеров
         function preloadBrawlerImages() {
             if (!brawlers.length) return;
             
-            // Берем только первые 20 для предзагрузки
-            const brawlersToPreload = brawlers.slice(0, 20);
+            const brawlersToPreload = brawlers.slice(0, 30);
             
             brawlersToPreload.forEach(brawler => {
                 const img = new Image();
@@ -968,7 +1016,6 @@
                     brawlerImageCache.set(brawler, img.src);
                 };
                 img.onerror = () => {
-                    // Используем заглушку при ошибке
                     brawlerImageCache.set(brawler, 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#333"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="20">?</text></svg>');
                 };
             });
@@ -1047,6 +1094,7 @@
                     if (currentRole === 'admin' && Object.keys(availableMaps).length === 0 && data.maps) {
                         availableMaps = data.maps;
                         renderModeTabs();
+                        preloadModeImages();
                     }
                     
                     updateUI();
@@ -1160,7 +1208,7 @@
                 return;
             }
             
-            if (!confirm('Сбросить драфт?')) return;
+            if (!confirm('Полностью сбросить драфт (включая карту)?')) return;
             
             try {
                 const response = await fetch('/api/reset', {
@@ -1179,7 +1227,46 @@
                     draftState = data.state;
                     updateUI();
                     renderBrawlers();
-                    showNotification('🔄 Драфт сброшен!');
+                    showNotification('🔄 Драфт полностью сброшен!');
+                    
+                    if (elements.blueReadyBtn) elements.blueReadyBtn.disabled = false;
+                    if (elements.redReadyBtn) elements.redReadyBtn.disabled = false;
+                    
+                    stopLocalTimer();
+                } else {
+                    showNotification('❌ ' + (data.error || 'Ошибка'));
+                }
+            } catch (error) {
+                showNotification('❌ Ошибка соединения');
+            }
+        }
+        
+        async function newDraft() {
+            if (currentRole !== 'admin') {
+                showNotification('❌ Только администратор может начать новый драфт');
+                return;
+            }
+            
+            if (!confirm('Начать новый драфт на текущей карте?')) return;
+            
+            try {
+                const response = await fetch('/api/new_draft', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Network error');
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    draftState = data.state;
+                    updateUI();
+                    renderBrawlers();
+                    showNotification('🆕 Новый драфт начат!');
                     
                     if (elements.blueReadyBtn) elements.blueReadyBtn.disabled = false;
                     if (elements.redReadyBtn) elements.redReadyBtn.disabled = false;
@@ -1226,12 +1313,7 @@
                         startLocalTimer(draftState.time_left);
                     }
                 } else {
-                    if (data.auto_reset) {
-                        showNotification('⏰ Драфт был автоматически сброшен');
-                        loadState();
-                    } else {
-                        showNotification('❌ ' + (data.error || 'Ошибка выбора'));
-                    }
+                    showNotification('❌ ' + (data.error || 'Ошибка выбора'));
                 }
             } catch (error) {
                 showNotification('❌ Ошибка соединения');
@@ -1246,9 +1328,23 @@
             switch(draftState.phase) {
                 case 'waiting':
                     statusText = '⏳ ОЖИДАНИЕ ГОТОВНОСТИ КОМАНД';
+                    // Показываем кнопки готовности если они скрыты
+                    if (currentRole === 'blue' && elements.blueControls) {
+                        elements.blueControls.style.display = 'flex';
+                    }
+                    if (currentRole === 'red' && elements.redControls) {
+                        elements.redControls.style.display = 'flex';
+                    }
                     break;
                 case 'ban':
                     statusText = '🚫 ФАЗА БАНОВ (40 СЕКУНД НА ВСЕ БАНЫ)';
+                    // Скрываем кнопки готовности во время драфта
+                    if (currentRole === 'blue' && elements.blueControls) {
+                        elements.blueControls.style.display = 'none';
+                    }
+                    if (currentRole === 'red' && elements.redControls) {
+                        elements.redControls.style.display = 'none';
+                    }
                     break;
                 case 'pick':
                     const currentPick = draftState.current_pick_index + 1;
@@ -1257,6 +1353,21 @@
                     break;
                 case 'finished':
                     statusText = '🏆 ДРАФТ ЗАВЕРШЕН!';
+                    // Показываем кнопки готовности для нового драфта
+                    if (currentRole === 'blue' && elements.blueControls) {
+                        elements.blueControls.style.display = 'flex';
+                        if (elements.blueReadyBtn) {
+                            elements.blueReadyBtn.disabled = false;
+                            elements.blueReadyBtn.textContent = '✅ ГОТОВ К НОВОМУ ДРАФТУ';
+                        }
+                    }
+                    if (currentRole === 'red' && elements.redControls) {
+                        elements.redControls.style.display = 'flex';
+                        if (elements.redReadyBtn) {
+                            elements.redReadyBtn.disabled = false;
+                            elements.redReadyBtn.textContent = '✅ ГОТОВ К НОВОМУ ДРАФТУ';
+                        }
+                    }
                     break;
             }
             
@@ -1298,7 +1409,7 @@
                 bans.forEach((brawler, index) => {
                     if (index < banSlots.length) {
                         if (brawler === 'hidden') {
-                            banSlots[index].innerHTML = '?';
+                            banSlots[index].textContent = '?';
                             banSlots[index].classList.add('hidden-ban');
                         } else {
                             const imgUrl = `/static/brawler_images/${encodeURIComponent(brawler)}.png`;
@@ -1329,7 +1440,7 @@
                         
                         const slotName = document.createElement('div');
                         slotName.className = 'slot-name';
-                        slotName.textContent = brawler.toUpperCase();
+                        slotName.textContent = brawler;
                         
                         pickSlots[index].appendChild(img);
                         pickSlots[index].appendChild(slotName);
@@ -1346,23 +1457,52 @@
         
         function updateCenterMapDisplay() {
             if (draftState && draftState.selected_map) {
-                elements.centerMapName.textContent = draftState.selected_map.name.replace(/_/g, ' ');
-                elements.centerModeName.textContent = draftState.selected_map.mode.replace(/_/g, ' ');
+                const mapName = draftState.selected_map.name.replace(/_/g, ' ');
+                const modeName = draftState.selected_map.mode.replace(/_/g, ' ');
+                
+                elements.centerMapName.textContent = mapName;
+                elements.centerModeName.textContent = modeName;
                 
                 const mapUrl = `/static/mappool/${draftState.selected_map.mode}/${draftState.selected_map.file}?t=${Date.now()}`;
                 elements.centerMapImage.src = mapUrl;
                 elements.centerMapImage.style.display = 'block';
                 elements.centerMapPlaceholder.style.display = 'none';
                 
+                const modeImage = createModeImageElement();
                 const modeUrl = `/static/modes/${draftState.selected_map.mode}.png?t=${Date.now()}`;
-                elements.centerModePlaceholder.style.display = 'none';
-                elements.centerModeIcon.innerHTML = `<img src="${modeUrl}" alt="${draftState.selected_map.mode}" onerror="this.style.display='none'; document.getElementById('center-mode-placeholder').style.display='flex';">`;
+                
+                // Проверяем кэш
+                const cachedUrl = modeImageCache.get(draftState.selected_map.mode);
+                
+                modeImage.onload = function() {
+                    modeImage.style.display = 'block';
+                    elements.centerModePlaceholder.style.display = 'none';
+                };
+                
+                modeImage.onerror = function() {
+                    modeImage.style.display = 'none';
+                    elements.centerModePlaceholder.style.display = 'flex';
+                };
+                
+                // Используем кэшированный URL или загружаем новый
+                modeImage.src = cachedUrl || modeUrl;
+                
+                // Если в кэше было изображение, сразу показываем его
+                if (cachedUrl) {
+                    modeImage.style.display = 'block';
+                    elements.centerModePlaceholder.style.display = 'none';
+                }
             } else {
                 elements.centerMapImage.style.display = 'none';
                 elements.centerMapPlaceholder.style.display = 'flex';
                 elements.centerModePlaceholder.style.display = 'flex';
                 elements.centerMapName.textContent = '—';
                 elements.centerModeName.textContent = '—';
+                
+                const modeImage = createModeImageElement();
+                if (modeImage) {
+                    modeImage.style.display = 'none';
+                }
             }
         }
         
@@ -1396,12 +1536,20 @@
                 availableMaps[mode].forEach(mapInfo => {
                     const mapCard = document.createElement('div');
                     mapCard.className = 'map-card';
-                    mapCard.innerHTML = `
-                        <img src="/static/mappool/${mode}/${mapInfo.file}?t=${Date.now()}" 
-                             alt="${mapInfo.name}"
-                             onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 140\"><rect width=\"100%\" height=\"100%\" fill=\"#333\"/><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" dy=\".3em\" fill=\"white\">${mapInfo.name}</text></svg>'">
-                        <div class="map-card-name">${mapInfo.name.replace(/_/g, ' ')}</div>
-                    `;
+                    
+                    const img = document.createElement('img');
+                    img.src = `/static/mappool/${mode}/${mapInfo.file}?t=${Date.now()}`;
+                    img.alt = mapInfo.name;
+                    img.onerror = function() {
+                        this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140"><rect width="100%" height="100%" fill="#333"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="white">' + mapInfo.name + '</text></svg>';
+                    };
+                    
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'map-card-name';
+                    nameDiv.textContent = mapInfo.name.replace(/_/g, ' ');
+                    
+                    mapCard.appendChild(img);
+                    mapCard.appendChild(nameDiv);
                     
                     mapCard.onclick = () => {
                         document.querySelectorAll('.map-card').forEach(card => {
@@ -1452,7 +1600,7 @@
                 if (data.success) {
                     draftState = data.state;
                     updateUI();
-                    showNotification(`🗺️ Карта "${selectedMap}" выбрана!`);
+                    showNotification(`🗺️ Карта "${selectedMap.replace(/_/g, ' ')}" выбрана!`);
                     
                     selectedMap = null;
                     document.querySelectorAll('.map-card').forEach(card => {
@@ -1473,7 +1621,10 @@
             elements.brawlersGrid.innerHTML = '';
             
             if (!brawlers.length) {
-                elements.brawlersGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">Загрузка бравлеров...</div>';
+                const message = document.createElement('div');
+                message.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;';
+                message.textContent = 'Загрузка бравлеров...';
+                elements.brawlersGrid.appendChild(message);
                 return;
             }
             
@@ -1485,7 +1636,10 @@
             }
             
             if (filteredBrawlers.length === 0) {
-                elements.brawlersGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">Бравлеры не найдены</div>';
+                const message = document.createElement('div');
+                message.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;';
+                message.textContent = 'Бравлеры не найдены';
+                elements.brawlersGrid.appendChild(message);
                 return;
             }
             
@@ -1499,12 +1653,19 @@
                 const cachedSrc = brawlerImageCache.get(brawler);
                 const imgUrl = cachedSrc || `/static/brawler_images/${encodeURIComponent(brawler)}.png`;
                 
-                card.innerHTML = `
-                    <img src="${imgUrl}" 
-                         alt="${brawler}"
-                         onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"45\" fill=\"#333\"/><text x=\"50\" y=\"55\" text-anchor=\"middle\" fill=\"white\" font-size=\"20\">${brawler.charAt(0)}</text></svg>'">
-                    <div class="brawler-name">${brawler}</div>
-                `;
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.alt = brawler;
+                img.onerror = function() {
+                    this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#333"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="20">' + brawler.charAt(0) + '</text></svg>';
+                };
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'brawler-name';
+                nameDiv.textContent = brawler;
+                
+                card.appendChild(img);
+                card.appendChild(nameDiv);
                 
                 if (!isSelected && (currentRole === 'blue' || currentRole === 'red')) {
                     card.onclick = () => selectBrawler(brawler);
