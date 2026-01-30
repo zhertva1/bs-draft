@@ -81,7 +81,8 @@ def get_or_create_state():
             'timer_active': False,
             'auto_bans_done': False,
             'auto_picks_done': [False, False, False, False, False, False],
-            'bans_completed': False
+            'bans_completed': False,
+            'draft_started': False  # Новый флаг: драфт начался
         }
     
     return 'main', draft_states['main']
@@ -90,7 +91,7 @@ def check_auto_reset(state):
     if state['phase'] == 'finished' and state['finished_at']:
         elapsed = time.time() - state['finished_at']
         if elapsed > 60:
-            # Сбрасываем только ready статусы, чтобы команды могли начать новый драфт
+            # Сбрасываем только готовность команд
             state['blue_ready'] = False
             state['red_ready'] = False
             state['phase'] = 'waiting'
@@ -101,26 +102,42 @@ def check_auto_reset(state):
             state['auto_bans_done'] = False
             state['auto_picks_done'] = [False, False, False, False, False, False]
             state['bans_completed'] = False
-            # Не сбрасываем выбранные бравлеры и карту!
+            state['draft_started'] = False  # Сбрасываем флаг начала драфта
             return True
     return False
 
 def get_available_brawlers(state):
+    # В фазе банов показываем всех бравлеров (даже тех, кого уже забанили)
+    if state['phase'] == 'ban' and not state['bans_completed']:
+        return BRWLERS.copy()
+    # В других фазах показываем только доступных
     return [b for b in BRWLERS if b not in state['all_selected']]
 
 def auto_ban(state):
     available = get_available_brawlers(state)
     
+    # Убираем из доступных только своих банов
+    if state['phase'] == 'ban':
+        # В фазе банов разрешаем банить одинаковых, поэтому не фильтруем
+        pass
+    
     while len(state['blue_bans']) < 3 and available:
         brawler = random.choice(available)
         state['blue_bans'].append(brawler)
-        state['all_selected'].append(brawler)
+        # В фазе банов не добавляем в all_selected до завершения банов
+        if state['bans_completed'] and brawler not in state['all_selected']:
+            state['all_selected'].append(brawler)
         available.remove(brawler)
+    
+    # Снова получаем доступных (так как blue_bans мог изменить список)
+    available = get_available_brawlers(state)
     
     while len(state['red_bans']) < 3 and available:
         brawler = random.choice(available)
         state['red_bans'].append(brawler)
-        state['all_selected'].append(brawler)
+        # В фазе банов не добавляем в all_selected до завершения банов
+        if state['bans_completed'] and brawler not in state['all_selected']:
+            state['all_selected'].append(brawler)
         available.remove(brawler)
 
 def auto_pick(state, team):
@@ -129,11 +146,13 @@ def auto_pick(state, team):
         brawler = random.choice(available)
         if team == 'blue' and len(state['blue_picks']) < 3:
             state['blue_picks'].append(brawler)
-            state['all_selected'].append(brawler)
+            if brawler not in state['all_selected']:
+                state['all_selected'].append(brawler)
             return True
         elif team == 'red' and len(state['red_picks']) < 3:
             state['red_picks'].append(brawler)
-            state['all_selected'].append(brawler)
+            if brawler not in state['all_selected']:
+                state['all_selected'].append(brawler)
             return True
     return False
 
@@ -148,6 +167,14 @@ def check_timer(state):
             auto_ban(state)
             state['auto_bans_done'] = True
             state['bans_completed'] = True
+            
+            # Добавляем все баны в all_selected после завершения фазы банов
+            for b in state['blue_bans']:
+                if b not in state['all_selected']:
+                    state['all_selected'].append(b)
+            for b in state['red_bans']:
+                if b not in state['all_selected']:
+                    state['all_selected'].append(b)
             
             state['picking_team'] = random.choice(['blue', 'red'])
             if state['picking_team'] == 'blue':
@@ -178,9 +205,6 @@ def check_timer(state):
                         state['finished_at'] = time.time()
 
 def update_state(state, team, brawler, action_type):
-    if brawler in state['all_selected']:
-        return False, 'Бравлер уже выбран'
-    
     if state['phase'] == 'waiting':
         return False, 'Ожидаем готовности обеих команд'
     
@@ -192,20 +216,35 @@ def update_state(state, team, brawler, action_type):
     # Фаза банов
     if state['phase'] == 'ban':
         if team == 'blue' and len(state['blue_bans']) < 3:
+            # В фазе банов разрешаем банить одинаковых бойцов
+            # Проверяем только что команда еще не банила этого бойца
+            if brawler in state['blue_bans']:
+                return False, 'Этот бравлер уже забанен вашей командой'
             state['blue_bans'].append(brawler)
+            # НЕ добавляем в all_selected до завершения всех банов
         elif team == 'red' and len(state['red_bans']) < 3:
+            if brawler in state['red_bans']:
+                return False, 'Этот бравлер уже забанен вашей командой'
             state['red_bans'].append(brawler)
+            # НЕ добавляем в all_selected до завершения всех банов
         else:
             return False, 'Все баны уже сделаны'
         
-        state['all_selected'].append(brawler)
         state['last_action'] = time.time()
         
         blue_bans_done = len(state['blue_bans']) == 3
         red_bans_done = len(state['red_bans']) == 3
         
         if blue_bans_done and red_bans_done:
+            # Все баны сделаны, добавляем все баны в all_selected
             state['bans_completed'] = True
+            for b in state['blue_bans']:
+                if b not in state['all_selected']:
+                    state['all_selected'].append(b)
+            for b in state['red_bans']:
+                if b not in state['all_selected']:
+                    state['all_selected'].append(b)
+            
             state['picking_team'] = random.choice(['blue', 'red'])
             if state['picking_team'] == 'blue':
                 state['pick_order'] = ['blue', 'red', 'red', 'blue', 'blue', 'red']
@@ -221,6 +260,10 @@ def update_state(state, team, brawler, action_type):
     elif state['phase'] == 'pick':
         if state['current_turn'] != team:
             return False, 'Не ваша очередь'
+        
+        # Проверяем, что бравлер не выбран (включая баны и пики)
+        if brawler in state['all_selected']:
+            return False, 'Бравлер уже выбран'
         
         if team == 'blue' and len(state['blue_picks']) < 3:
             state['blue_picks'].append(brawler)
@@ -307,7 +350,6 @@ def get_state():
     room_id, state = get_or_create_state()
     
     if check_auto_reset(state):
-        # Уже обработано в check_auto_reset
         pass
     
     check_timer(state)
@@ -333,7 +375,11 @@ def set_ready():
     
     room_id, state = get_or_create_state()
     
-    # Если драфт завершен, сбрасываем пики и баны для нового драфта
+    # Если драфт уже начался и не завершен, нельзя нажать готов
+    if state['draft_started'] and state['phase'] != 'finished':
+        return jsonify({'success': False, 'error': 'Драфт уже начался'})
+    
+    # Если драфт завершен, сбрасываем для нового
     if state['phase'] == 'finished':
         state['blue_bans'] = []
         state['red_bans'] = []
@@ -347,6 +393,7 @@ def set_ready():
         state['auto_bans_done'] = False
         state['auto_picks_done'] = [False, False, False, False, False, False]
         state['bans_completed'] = False
+        state['draft_started'] = False
     
     if role == 'blue':
         state['blue_ready'] = True
@@ -359,6 +406,10 @@ def set_ready():
         state['phase'] = 'ban'
         state['phase_start_time'] = time.time()
         state['timer_active'] = True
+        state['draft_started'] = True  # Драфт начался
+        # Скрываем кнопки готовности
+        state['blue_ready'] = False
+        state['red_ready'] = False
     
     return jsonify({
         'success': True,
@@ -421,6 +472,7 @@ def reset_draft():
     state['auto_bans_done'] = False
     state['auto_picks_done'] = [False, False, False, False, False, False]
     state['bans_completed'] = False
+    state['draft_started'] = False
     state['last_action'] = time.time()
     
     return jsonify({
@@ -434,7 +486,7 @@ def reset_draft():
 def new_draft():
     room_id, state = get_or_create_state()
     
-    # Сброс только драфта (баны и пики), но карта остается
+    # Сброс только драфта (баны и пики), но карта и готовность остаются
     state['blue_bans'] = []
     state['red_bans'] = []
     state['blue_picks'] = []
@@ -446,13 +498,14 @@ def new_draft():
     state['pick_order'] = []
     state['current_pick_index'] = 0
     state['finished_at'] = None
-    state['blue_ready'] = False
-    state['red_ready'] = False
     state['timer_active'] = False
     state['auto_bans_done'] = False
     state['auto_picks_done'] = [False, False, False, False, False, False]
     state['bans_completed'] = False
+    state['draft_started'] = False
     state['last_action'] = time.time()
+    # Готовность команд сохраняем для нового драфта
+    # Карту сохраняем
     
     return jsonify({
         'success': True,
@@ -504,7 +557,6 @@ def select_map():
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     response = send_from_directory('static', filename)
-    # Добавляем заголовки кэширования для изображений
     if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
         response.headers['Cache-Control'] = 'public, max-age=31536000'
         response.headers['Expires'] = (datetime.utcnow() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
