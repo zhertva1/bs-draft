@@ -4,17 +4,19 @@ import time
 from flask import Flask, render_template, jsonify, request, session, send_from_directory
 from datetime import datetime, timedelta
 from functools import wraps
+from flask_cors import CORS  # Добавляем CORS поддержку
 
 app = Flask(__name__)
+CORS(app)  # Включаем CORS для всех маршрутов
 app.secret_key = 'super-secret-key-for-brawl-draft'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
 # Фиксированный админ-токен (можно изменить)
 ADMIN_TOKEN = "admin_9605183db62b41bd"
 print(f"✅ Админ-панель доступна по ссылке: /admin/{ADMIN_TOKEN}")
-print(f"✅ Наблюдатель: /")
-print(f"✅ Синяя команда: /blue")
-print(f"✅ Красная команда: /red")
+print(f"✅ Наблюдатель: http://localhost:5000/")
+print(f"✅ Синяя команда: http://localhost:5000/blue")
+print(f"✅ Красная команда: http://localhost:5000/red")
 
 # Получаем список бравлеров
 def get_brawlers_list():
@@ -234,6 +236,7 @@ def update_state(state, team, brawler, action_type):
             state['current_pick_index'] = 0
             state['phase_start_time'] = time.time()
             state['timer_active'] = True
+            print(f"✅ Все баны завершены! Начинаем фазу пиков. Первый пик: {state['current_turn']}")
     
     # Фаза пиков
     elif state['phase'] == 'pick':
@@ -261,8 +264,10 @@ def update_state(state, team, brawler, action_type):
             state['phase'] = 'finished'
             state['finished_at'] = time.time()
             state['timer_active'] = False
+            print(f"🏆 Драфт завершен!")
         elif state['current_pick_index'] < len(state['pick_order']):
             state['current_turn'] = state['pick_order'][state['current_pick_index']]
+            print(f"➡️ Следующий пик: {state['current_turn']} команда")
         else:
             state['phase'] = 'finished'
             state['finished_at'] = time.time()
@@ -324,95 +329,119 @@ def admin_view(token):
 # ========== API МАРШРУТЫ ==========
 @app.route('/api/state')
 def get_state():
-    role = request.args.get('role', 'spectator')
-    room_id, state = get_or_create_state()
-    
-    # Проверяем автосброс
-    if check_auto_reset(state):
-        reset_state()
+    try:
+        role = request.args.get('role', 'spectator')
         room_id, state = get_or_create_state()
-    
-    # Проверяем таймер
-    check_timer(state)
-    
-    return jsonify({
-        'success': True,
-        'state': get_client_state(state, role if role in ['blue', 'red'] else 'spectator'),
-        'brawlers': BRWLERS,
-        'role': role,
-        'maps': MAPS_BY_MODE
-    })
+        
+        # Проверяем автосброс
+        if check_auto_reset(state):
+            reset_state()
+            room_id, state = get_or_create_state()
+        
+        # Проверяем таймер
+        check_timer(state)
+        
+        return jsonify({
+            'success': True,
+            'state': get_client_state(state, role if role in ['blue', 'red'] else 'spectator'),
+            'brawlers': BRWLERS,
+            'role': role,
+            'maps': MAPS_BY_MODE
+        })
+    except Exception as e:
+        print(f"❌ Ошибка в /api/state: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/ready', methods=['POST'])
 def set_ready():
-    data = request.json
-    role = data.get('role', '')
-    
-    if role not in ['blue', 'red']:
-        return jsonify({'success': False, 'error': 'Неверная роль'})
-    
-    room_id, state = get_or_create_state()
-    
-    if role == 'blue':
-        state['blue_ready'] = True
-    elif role == 'red':
-        state['red_ready'] = True
-    
-    state['last_action'] = time.time()
-    
-    # Проверяем, готовы ли обе команды
-    if state['blue_ready'] and state['red_ready'] and state['phase'] == 'waiting':
-        state['phase'] = 'ban'
-        state['phase_start_time'] = time.time()
-        state['timer_active'] = True
-        print(f"🚀 Драфт начат! Фаза банов. 40 секунд на все баны!")
-    
-    return jsonify({
-        'success': True,
-        'state': get_client_state(state, role),
-        'message': f'Команда {role} готова!'
-    })
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Нет данных'}), 400
+            
+        role = data.get('role', '')
+        
+        if role not in ['blue', 'red']:
+            return jsonify({'success': False, 'error': 'Неверная роль'})
+        
+        room_id, state = get_or_create_state()
+        
+        if role == 'blue':
+            state['blue_ready'] = True
+            print(f"🔵 Синяя команда готова!")
+        elif role == 'red':
+            state['red_ready'] = True
+            print(f"🔴 Красная команда готова!")
+        
+        state['last_action'] = time.time()
+        
+        # Проверяем, готовы ли обе команды
+        if state['blue_ready'] and state['red_ready'] and state['phase'] == 'waiting':
+            state['phase'] = 'ban'
+            state['phase_start_time'] = time.time()
+            state['timer_active'] = True
+            print(f"🚀 Драфт начат! Фаза банов. 40 секунд на все баны!")
+        
+        return jsonify({
+            'success': True,
+            'state': get_client_state(state, role),
+            'message': f'Команда {role} готова!'
+        })
+    except Exception as e:
+        print(f"❌ Ошибка в /api/ready: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/select', methods=['POST'])
 def select_brawler():
-    data = request.json
-    brawler = data.get('brawler', '').strip()
-    role = data.get('role', '')
-    
-    if not brawler or not role or role not in ['blue', 'red']:
-        return jsonify({'success': False, 'error': 'Неверные данные'})
-    
-    if brawler not in BRWLERS:
-        return jsonify({'success': False, 'error': 'Бравлер не найден'})
-    
-    room_id, state = get_or_create_state()
-    
-    # Проверяем автосброс
-    if check_auto_reset(state):
-        reset_state()
-        return jsonify({'success': False, 'error': 'Драфт был сброшен по таймеру', 'auto_reset': True})
-    
-    success, message = update_state(state, role, brawler, 'select')
-    
-    if success:
-        print(f"✅ {role} выбрал бравлера: {brawler}")
-        return jsonify({
-            'success': True,
-            'message': message,
-            'state': get_client_state(state, role)
-        })
-    else:
-        return jsonify({'success': False, 'error': message})
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Нет данных'}), 400
+            
+        brawler = data.get('brawler', '').strip()
+        role = data.get('role', '')
+        
+        if not brawler or not role or role not in ['blue', 'red']:
+            return jsonify({'success': False, 'error': 'Неверные данные'}), 400
+        
+        if brawler not in BRWLERS:
+            return jsonify({'success': False, 'error': 'Бравлер не найден'}), 404
+        
+        room_id, state = get_or_create_state()
+        
+        # Проверяем автосброс
+        if check_auto_reset(state):
+            reset_state()
+            return jsonify({'success': False, 'error': 'Драфт был сброшен по таймеру', 'auto_reset': True})
+        
+        success, message = update_state(state, role, brawler, 'select')
+        
+        if success:
+            print(f"✅ {role} выбрал бравлера: {brawler}")
+            return jsonify({
+                'success': True,
+                'message': message,
+                'state': get_client_state(state, role)
+            })
+        else:
+            return jsonify({'success': False, 'error': message})
+    except Exception as e:
+        print(f"❌ Ошибка в /api/select: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/reset', methods=['POST'])
 @admin_required
 def reset_draft():
-    reset_state()
-    return jsonify({
-        'success': True,
-        'state': get_client_state(draft_states['main'], 'spectator'),
-        'message': 'Драфт сброшен!'
-    })
+    try:
+        reset_state()
+        return jsonify({
+            'success': True,
+            'state': get_client_state(draft_states['main'], 'spectator'),
+            'message': 'Драфт сброшен!'
+        })
+    except Exception as e:
+        print(f"❌ Ошибка в /api/reset: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 def reset_state():
     """Сброс состояния драфта"""
@@ -443,43 +472,54 @@ def reset_state():
 
 @app.route('/api/maps')
 def get_maps():
-    return jsonify({
-        'success': True,
-        'maps': MAPS_BY_MODE,
-        'modes': list(MAPS_BY_MODE.keys())
-    })
+    try:
+        return jsonify({
+            'success': True,
+            'maps': MAPS_BY_MODE,
+            'modes': list(MAPS_BY_MODE.keys())
+        })
+    except Exception as e:
+        print(f"❌ Ошибка в /api/maps: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/select_map', methods=['POST'])
 @admin_required
 def select_map():
-    data = request.json
-    map_name = data.get('map_name')
-    map_mode = data.get('map_mode')
-    
-    room_id, state = get_or_create_state()
-    
-    # Проверяем, что карта существует
-    if map_mode not in MAPS_BY_MODE:
-        return jsonify({'success': False, 'error': 'Неверный режим'})
-    
-    map_found = False
-    for map_info in MAPS_BY_MODE[map_mode]:
-        if map_info['name'] == map_name:
-            state['selected_map'] = map_info
-            state['selected_mode'] = map_mode
-            state['last_action'] = time.time()
-            map_found = True
-            print(f"🗺️  Выбрана карта: {map_name} ({map_mode})")
-            break
-    
-    if not map_found:
-        return jsonify({'success': False, 'error': 'Карта не найдена'})
-    
-    return jsonify({
-        'success': True,
-        'state': get_client_state(state, 'spectator'),
-        'message': f'Карта {map_name} выбрана!'
-    })
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Нет данных'}), 400
+            
+        map_name = data.get('map_name')
+        map_mode = data.get('map_mode')
+        
+        room_id, state = get_or_create_state()
+        
+        # Проверяем, что карта существует
+        if map_mode not in MAPS_BY_MODE:
+            return jsonify({'success': False, 'error': 'Неверный режим'}), 404
+        
+        map_found = False
+        for map_info in MAPS_BY_MODE[map_mode]:
+            if map_info['name'] == map_name:
+                state['selected_map'] = map_info
+                state['selected_mode'] = map_mode
+                state['last_action'] = time.time()
+                map_found = True
+                print(f"🗺️  Выбрана карта: {map_name} ({map_mode})")
+                break
+        
+        if not map_found:
+            return jsonify({'success': False, 'error': 'Карта не найдена'}), 404
+        
+        return jsonify({
+            'success': True,
+            'state': get_client_state(state, 'spectator'),
+            'message': f'Карта {map_name} выбрана!'
+        })
+    except Exception as e:
+        print(f"❌ Ошибка в /api/select_map: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # Статические файлы
 @app.route('/static/<path:filename>')
@@ -500,6 +540,14 @@ def test_page():
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory('static', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+# Обработчик ошибок CORS
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
@@ -524,6 +572,7 @@ if __name__ == '__main__':
     print("   • 40 секунд на все баны (одновременно)")
     print("   • 40 секунд на каждый пик")
     print("   • Автопики/автобаны при истечении времени")
+    print("   • Исправлены ошибки соединения")
     print("="*50 + "\n")
     
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=True)
