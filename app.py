@@ -1,3 +1,4 @@
+# Обновляем импорты и добавляем новые поля
 import os
 import random
 import time
@@ -54,7 +55,7 @@ def get_maps_by_mode():
 
 MAPS_BY_MODE = get_maps_by_mode()
 
-# Проверяем наличие гаджетов (исправлен формат имен)
+# Проверяем наличие гаджетов
 def check_gadgets_exist(brawler_name):
     """Проверяет существование гаджетов для бравлера"""
     gadgets_folder = os.path.join(app.static_folder, 'gadgets')
@@ -62,12 +63,9 @@ def check_gadgets_exist(brawler_name):
     if not os.path.exists(gadgets_folder):
         return False
     
-    # Используем формат: brawler_gadjet_01.png и brawler_gadjet_02.png
-    # Заменяем пробелы на подчеркивания в имени файла
-    safe_name = brawler_name.replace(" ", "_")
-    
-    gadget1 = os.path.join(gadgets_folder, f"{safe_name}_gadjet_01.png")
-    gadget2 = os.path.join(gadgets_folder, f"{safe_name}_gadjet_02.png")
+    # Ищем файлы гаджетов
+    gadget1 = os.path.join(gadgets_folder, f"{brawler_name}.gadget.01.png")
+    gadget2 = os.path.join(gadgets_folder, f"{brawler_name}.gadget.02.png")
     
     return os.path.exists(gadget1) and os.path.exists(gadget2)
 
@@ -77,10 +75,10 @@ draft_states = {}
 def get_or_create_state():
     if 'main' not in draft_states:
         draft_states['main'] = {
-            'blue_bans': [],
-            'red_bans': [],
-            'blue_picks': [],
-            'red_picks': [],
+            'blue_bans': [],  # Бан - просто имя бравлера
+            'red_bans': [],   # Бан - просто имя бравлера
+            'blue_picks': [],  # Пик - объект с бравлером и гаджетом
+            'red_picks': [],   # Пик - объект с бравлером и гаджетом
             'all_selected': [],
             'phase': 'waiting',
             'phase_start_time': None,
@@ -103,9 +101,7 @@ def get_or_create_state():
             'blue_team_name': 'СИНЯЯ КОМАНДА',
             'red_team_name': 'КРАСНАЯ КОМАНДА',
             'picking_team': None,
-            'next_pick_indicator': 0,
-            'blue_name_last_updated': None,
-            'red_name_last_updated': None
+            'next_pick_indicator': 0
         }
     
     return 'main', draft_states['main']
@@ -127,8 +123,6 @@ def check_auto_reset(state):
             state['draft_started'] = False
             state['picking_team'] = None
             state['next_pick_indicator'] = 0
-            state['blue_name_last_updated'] = None
-            state['red_name_last_updated'] = None
             return True
     return False
 
@@ -166,7 +160,7 @@ def auto_pick(state, team):
         
         # Определяем, есть ли гаджеты у этого бравлера
         has_gadgets = check_gadgets_exist(brawler)
-        gadget = 1 if has_gadgets else 0
+        gadget = 1 if has_gadgets else 0  # 0 - нет гаджетов, 1 - первый гаджет, 2 - второй
         
         if team == 'blue' and len(state['blue_picks']) < 3:
             state['blue_picks'].append({
@@ -436,8 +430,6 @@ def set_ready():
         state['draft_started'] = False
         state['picking_team'] = None
         state['next_pick_indicator'] = 0
-        state['blue_name_last_updated'] = None
-        state['red_name_last_updated'] = None
     
     if role == 'blue':
         state['blue_ready'] = True
@@ -490,6 +482,7 @@ def select_brawler():
     else:
         return jsonify({'success': False, 'error': message})
 
+# НОВЫЙ ЭНДПОИНТ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ГАДЖЕТА
 @app.route('/api/toggle_gadget', methods=['POST'])
 def toggle_gadget():
     data = request.get_json()
@@ -574,8 +567,6 @@ def reset_draft():
     state['draft_started'] = False
     state['picking_team'] = None
     state['next_pick_indicator'] = 0
-    state['blue_name_last_updated'] = None
-    state['red_name_last_updated'] = None
     state['last_action'] = time.time()
     
     return jsonify({
@@ -607,8 +598,6 @@ def new_draft():
     state['draft_started'] = False
     state['picking_team'] = None
     state['next_pick_indicator'] = 0
-    state['blue_name_last_updated'] = None
-    state['red_name_last_updated'] = None
     state['last_action'] = time.time()
     
     return jsonify({
@@ -633,8 +622,6 @@ def update_team_names():
     room_id, state = get_or_create_state()
     state['blue_team_name'] = blue_name
     state['red_team_name'] = red_name
-    state['blue_name_last_updated'] = time.time()
-    state['red_name_last_updated'] = time.time()
     state['last_action'] = time.time()
     
     return jsonify({
