@@ -697,51 +697,36 @@
             z-index: 4;
         }
         
-        /* Стили для гаджетов */
-        .gadget-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(30, 30, 30, 0.9));
-            border-radius: 12px;
-            border: 3px solid #f39c12;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
-        }
-        
-        .gadget-container:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 30px rgba(243, 156, 18, 0.8);
-        }
-        
-        .gadget-container.visible {
-            display: flex;
-            animation: gadget-appear 0.5s ease-out;
-        }
-        
-        @keyframes gadget-appear {
-            from { 
-                opacity: 0; 
-                transform: translateY(-20px) scale(0.8); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
-        }
-        
         .gadget-icon {
-            width: 80%;
-            height: 80%;
+            position: absolute;
+            bottom: 65px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            border: 2px solid #f39c12;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .gadget-icon:hover {
+            transform: scale(1.1);
+            border-color: #ffeb3b;
+            box-shadow: 0 0 20px rgba(255, 235, 59, 0.7);
+        }
+        
+        .gadget-icon img {
+            width: 100%;
+            height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+            padding: 5px;
+        }
+        
+        .gadget-icon.no-gadget {
+            display: none !important;
         }
         
         .slot-name {
@@ -1404,13 +1389,6 @@
                 padding: 15px 25px;
                 min-width: 200px;
             }
-            
-            .gadget-container {
-                width: 50px;
-                height: 50px;
-                top: 8px;
-                right: 8px;
-            }
         }
         
         @media (max-width: 768px) {
@@ -1497,14 +1475,6 @@
                 max-width: calc(100% - 40px);
                 font-size: 18px;
                 padding: 20px;
-            }
-            
-            .gadget-container {
-                width: 40px;
-                height: 40px;
-                top: 5px;
-                right: 5px;
-                border-width: 2px;
             }
         }
         
@@ -1671,7 +1641,7 @@
                         <li>Во время пиков нельзя выбирать одинаковых бойцов</li>
                         <li>Не успеете - система выберет случайного бравлера</li>
                         <li>Выбирайте бравлеров кликом по карточкам выше</li>
-                        <li>После пика бойца появляется гаджет - кликните по нему, чтобы сменить гаджет</li>
+                        <li>Для пикнутого бравлера можно выбрать гаджет (клик по иконке справа внизу)</li>
                     </ul>
                 </div>
             </div>
@@ -1696,15 +1666,12 @@
                     <div class="picks-column" id="blue-picks">
                         <div class="pick-slot" data-pick-index="0">
                             <div class="question-mark"><img src="/static/images/question.png" alt="?"></div>
-                            <div class="gadget-container" data-team="blue" data-pick-index="0"></div>
                         </div>
                         <div class="pick-slot" data-pick-index="1">
                             <div class="question-mark"><img src="/static/images/question.png" alt="?"></div>
-                            <div class="gadget-container" data-team="blue" data-pick-index="1"></div>
                         </div>
                         <div class="pick-slot" data-pick-index="2">
                             <div class="question-mark"><img src="/static/images/question.png" alt="?"></div>
-                            <div class="gadget-container" data-team="blue" data-pick-index="2"></div>
                         </div>
                     </div>
                 </div>
@@ -1763,15 +1730,12 @@
                     <div class="picks-column" id="red-picks">
                         <div class="pick-slot" data-pick-index="0">
                             <div class="question-mark"><img src="/static/images/question.png" alt="?"></div>
-                            <div class="gadget-container" data-team="red" data-pick-index="0"></div>
                         </div>
                         <div class="pick-slot" data-pick-index="1">
                             <div class="question-mark"><img src="/static/images/question.png" alt="?"></div>
-                            <div class="gadget-container" data-team="red" data-pick-index="1"></div>
                         </div>
                         <div class="pick-slot" data-pick-index="2">
                             <div class="question-mark"><img src="/static/images/question.png" alt="?"></div>
-                            <div class="gadget-container" data-team="red" data-pick-index="2"></div>
                         </div>
                     </div>
                 </div>
@@ -1829,7 +1793,7 @@
                     <li>После банов: 40 секунд на каждый пик по очереди</li>
                     <li>Во время пиков нельзя выбирать одинаковых бойцов</li>
                     <li>Не успели? Система выберет случайного бравлера!</li>
-                    <li>После пика бойца появляется его гаджет - игроки могут менять гаджет кликом</li>
+                    <li>Для пикнутого бравлера можно выбрать гаджет (клик по иконке справа внизу)</li>
                     <li>Используйте "НОВЫЙ ДРАФТ" для начала нового матча (карта сохраняется)</li>
                     <li>Используйте "СБРОСИТЬ ДРАФТ" для полного сброса (включая карту)</li>
                     <li>Используйте форму выше для изменения названий команд</li>
@@ -1929,21 +1893,6 @@
                 });
             }
             
-            // Добавляем обработчики кликов на гаджеты
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.gadget-container')) {
-                    const gadgetContainer = e.target.closest('.gadget-container');
-                    const team = gadgetContainer.dataset.team;
-                    const pickIndex = parseInt(gadgetContainer.dataset.pickIndex);
-                    
-                    // Проверяем, что кликает игрок своей команды
-                    if ((team === 'blue' && currentRole === 'blue') || 
-                        (team === 'red' && currentRole === 'red')) {
-                        updateGadget(team, pickIndex);
-                    }
-                }
-            });
-            
             setInterval(loadState, 1000);
             
             setTimeout(() => {
@@ -2020,15 +1969,11 @@
                         stopLocalTimer();
                     }
                     
-                    // Обновляем поля ввода названий команд только если:
-                    // 1. Мы админ
-                    // 2. Поля не редактируются в данный момент
-                    // 3. Значения изменились на сервере (сравниваем с текущими значениями полей)
+                    // Обновляем поля ввода названий команд
                     if (currentRole === 'admin' && draftState.blue_team_name && draftState.red_team_name) {
                         const currentBlueValue = elements.blueTeamNameInput.value;
                         const currentRedValue = elements.redTeamNameInput.value;
                         
-                        // Обновляем только если значения отличаются и пользователь не редактировал их
                         if (currentBlueValue !== draftState.blue_team_name && !teamNamesEdited.blue) {
                             elements.blueTeamNameInput.value = draftState.blue_team_name;
                         }
@@ -2329,9 +2274,9 @@
             }
         }
         
-        async function updateGadget(team, pickIndex) {
-            if (currentRole !== team) {
-                showNotification('Вы можете менять гаджеты только своей команды', 'error');
+        async function updateGadget(brawler) {
+            if (currentRole !== 'blue' && currentRole !== 'red' && currentRole !== 'admin') {
+                showNotification('Только игроки и админ могут менять гаджеты', 'error');
                 return;
             }
             
@@ -2343,8 +2288,8 @@
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        role: team,
-                        pick_index: pickIndex
+                        brawler: brawler,
+                        role: currentRole
                     })
                 });
                 
@@ -2355,12 +2300,34 @@
                 if (data.success) {
                     draftState = data.state;
                     updateUI();
-                    showNotification('Гаджет изменен!', 'success');
+                    showNotification(`Гаджет изменен на ${data.gadget}`, 'success');
                 } else {
                     showNotification(data.error || 'Ошибка изменения гаджета', 'error');
                 }
             } catch (error) {
                 showNotification('Ошибка соединения', 'error');
+            }
+        }
+        
+        async function checkGadgetExists(brawler) {
+            try {
+                const response = await fetch('/api/check_gadget', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        brawler: brawler
+                    })
+                });
+                
+                if (!response.ok) return { has_gadgets: false };
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                return { has_gadgets: false };
             }
         }
         
@@ -2440,15 +2407,14 @@
             updateCenterMapDisplay();
             updateTeamSlots('blue', draftState.blue_bans, draftState.blue_picks);
             updateTeamSlots('red', draftState.red_bans, draftState.red_picks);
-            updateGadgetsDisplay();
             updateNextPickIndicator();
         }
         
         function updateCoinsVisibility() {
             if (!draftState) return;
             
-            // Монетка появляется с начала банов
-            if ((draftState.phase === 'ban' || draftState.phase === 'pick') && draftState.picking_team) {
+            // Показываем монетку с начала драфта (фаза ban) и до конца
+            if (draftState.coin_visible && draftState.picking_team) {
                 if (draftState.picking_team === 'blue') {
                     elements.blueCoin.classList.add('visible');
                     elements.redCoin.classList.remove('visible');
@@ -2462,89 +2428,116 @@
             }
         }
         
-        function updateGadgetsDisplay() {
-            if (!draftState) return;
+        async function updateTeamSlots(team, bans, picks) {
+            const banSlots = document.querySelectorAll(`#${team}-bans .ban-slot`);
+            const pickSlots = document.querySelectorAll(`#${team}-picks .pick-slot`);
             
-            // Обновляем гаджеты для синей команды
-            for (let i = 0; i < 3; i++) {
-                const gadgetContainer = document.querySelector(`.gadget-container[data-team="blue"][data-pick-index="${i}"]`);
-                if (gadgetContainer) {
-                    // Проверяем видимость гаджета
-                    const isGadgetVisible = draftState.gadgets_visible[i];
-                    
-                    if (isGadgetVisible && draftState.blue_picks && draftState.blue_picks[i]) {
-                        const brawler = draftState.blue_picks[i];
-                        const gadgetNumber = draftState.blue_gadgets[i];
-                        
-                        // Формируем имя файла гаджета (заменяем пробелы и спецсимволы на нижнее подчеркивание)
-                        const brawlerNameForGadget = brawler.toLowerCase()
-                            .replace(/[^a-zа-яё0-9]/gi, '_')
-                            .replace(/_+/g, '_');
-                        
-                        const gadgetFilename = `${brawlerNameForGadget}_gadjet_0${gadgetNumber}.png`;
-                        const gadgetUrl = `/static/gadjets/${gadgetFilename}`;
-                        
-                        // Очищаем контейнер
-                        gadgetContainer.innerHTML = '';
-                        
-                        // Создаем изображение гаджета
-                        const gadgetIcon = document.createElement('img');
-                        gadgetIcon.className = 'gadget-icon';
-                        gadgetIcon.src = gadgetUrl;
-                        gadgetIcon.alt = `Гаджет ${gadgetNumber} для ${brawler}`;
-                        gadgetIcon.onerror = function() {
-                            // Если файл гаджета не найден, показываем заглушку
-                            this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#f39c12"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="24">G</text></svg>';
-                        };
-                        
-                        gadgetContainer.appendChild(gadgetIcon);
-                        gadgetContainer.classList.add('visible');
-                    } else {
-                        gadgetContainer.classList.remove('visible');
-                        gadgetContainer.innerHTML = '';
+            // Обновляем баны
+            banSlots.forEach(slot => {
+                slot.innerHTML = '';
+                slot.style.background = '';
+                slot.style.borderStyle = 'dashed';
+                slot.classList.remove('has-brawler', 'hidden-ban');
+            });
+            
+            if (bans && bans.length > 0) {
+                bans.forEach((brawler, index) => {
+                    if (index < banSlots.length) {
+                        if (brawler === 'hidden') {
+                            banSlots[index].textContent = '?';
+                            banSlots[index].classList.add('hidden-ban');
+                        } else {
+                            const imgUrl = `/static/brawler_images/${encodeURIComponent(brawler)}.png`;
+                            const img = document.createElement('img');
+                            img.src = imgUrl;
+                            img.alt = brawler;
+                            img.onerror = function() {
+                                this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">❓</text></svg>';
+                            };
+                            banSlots[index].appendChild(img);
+                            banSlots[index].style.borderStyle = 'solid';
+                            banSlots[index].classList.add('has-brawler');
+                        }
                     }
-                }
+                });
             }
             
-            // Обновляем гаджеты для красной команды
-            for (let i = 0; i < 3; i++) {
-                const gadgetContainer = document.querySelector(`.gadget-container[data-team="red"][data-pick-index="${i}"]`);
-                if (gadgetContainer) {
-                    // Проверяем видимость гаджета (индексы 3-5 для красной команды)
-                    const isGadgetVisible = draftState.gadgets_visible[i + 3];
-                    
-                    if (isGadgetVisible && draftState.red_picks && draftState.red_picks[i]) {
-                        const brawler = draftState.red_picks[i];
-                        const gadgetNumber = draftState.red_gadgets[i];
+            // Обновляем пики
+            pickSlots.forEach((slot, index) => {
+                // Очищаем слот
+                const existingImg = slot.querySelector('img:not(.question-mark img)');
+                const existingGadget = slot.querySelector('.gadget-icon');
+                const existingName = slot.querySelector('.slot-name');
+                
+                if (existingImg) existingImg.remove();
+                if (existingGadget) existingGadget.remove();
+                if (existingName) existingName.remove();
+                
+                const questionMark = slot.querySelector('.question-mark');
+                if (questionMark) {
+                    questionMark.style.display = 'flex';
+                }
+            });
+            
+            if (picks && picks.length > 0) {
+                picks.forEach((brawler, index) => {
+                    if (index < pickSlots.length) {
+                        const slot = pickSlots[index];
+                        const questionMark = slot.querySelector('.question-mark');
                         
-                        // Формируем имя файла гаджета
-                        const brawlerNameForGadget = brawler.toLowerCase()
-                            .replace(/[^a-zа-яё0-9]/gi, '_')
-                            .replace(/_+/g, '_');
+                        if (questionMark) {
+                            questionMark.style.display = 'none';
+                        }
                         
-                        const gadgetFilename = `${brawlerNameForGadget}_gadjet_0${gadgetNumber}.png`;
-                        const gadgetUrl = `/static/gadjets/${gadgetFilename}`;
-                        
-                        // Очищаем контейнер
-                        gadgetContainer.innerHTML = '';
-                        
-                        // Создаем изображение гаджета
-                        const gadgetIcon = document.createElement('img');
-                        gadgetIcon.className = 'gadget-icon';
-                        gadgetIcon.src = gadgetUrl;
-                        gadgetIcon.alt = `Гаджет ${gadgetNumber} для ${brawler}`;
-                        gadgetIcon.onerror = function() {
-                            // Если файл гаджета не найден, показываем заглушку
-                            this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#e74c3c"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="24">G</text></svg>';
+                        const imgUrl = `/static/brawler_images/${encodeURIComponent(brawler)}.png`;
+                        const img = document.createElement('img');
+                        img.src = imgUrl;
+                        img.alt = brawler;
+                        img.onerror = function() {
+                            this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">❓</text></svg>';
                         };
                         
-                        gadgetContainer.appendChild(gadgetIcon);
-                        gadgetContainer.classList.add('visible');
-                    } else {
-                        gadgetContainer.classList.remove('visible');
-                        gadgetContainer.innerHTML = '';
+                        const slotName = document.createElement('div');
+                        slotName.className = 'slot-name';
+                        slotName.textContent = brawler;
+                        
+                        slot.appendChild(img);
+                        slot.appendChild(slotName);
+                        
+                        // Добавляем гаджет для пикнутого бравлера
+                        addGadgetToSlot(slot, brawler, team);
                     }
-                }
+                });
+            }
+        }
+        
+        async function addGadgetToSlot(slot, brawler, team) {
+            // Проверяем, есть ли у бравлера гаджеты
+            const gadgetInfo = await checkGadgetExists(brawler);
+            
+            if (gadgetInfo.has_gadgets) {
+                const currentGadget = draftState.gadgets && draftState.gadgets[brawler] ? draftState.gadgets[brawler] : 1;
+                
+                const gadgetIcon = document.createElement('div');
+                gadgetIcon.className = 'gadget-icon';
+                gadgetIcon.title = 'Клик для смены гаджета';
+                
+                const gadgetImg = document.createElement('img');
+                gadgetImg.src = `/static/gadjets/${brawler}_gadjet_0${currentGadget}.png`;
+                gadgetImg.alt = `Гаджет ${currentGadget}`;
+                gadgetImg.onerror = function() {
+                    gadgetIcon.classList.add('no-gadget');
+                };
+                
+                gadgetIcon.appendChild(gadgetImg);
+                
+                // Добавляем обработчик клика для смены гаджета
+                gadgetIcon.onclick = async (e) => {
+                    e.stopPropagation();
+                    await updateGadget(brawler);
+                };
+                
+                slot.appendChild(gadgetIcon);
             }
         }
         
@@ -2652,81 +2645,6 @@
             const mins = Math.floor(seconds / 60);
             const secs = seconds % 60;
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        
-        function updateTeamSlots(team, bans, picks) {
-            const banSlots = document.querySelectorAll(`#${team}-bans .ban-slot`);
-            const pickSlots = document.querySelectorAll(`#${team}-picks .pick-slot`);
-            
-            banSlots.forEach(slot => {
-                slot.innerHTML = '';
-                slot.style.background = '';
-                slot.style.borderStyle = 'dashed';
-                slot.classList.remove('has-brawler', 'hidden-ban');
-            });
-            
-            pickSlots.forEach((slot, index) => {
-                const img = slot.querySelector('img:not(.question-mark img):not(.gadget-icon)');
-                const slotName = slot.querySelector('.slot-name');
-                
-                if (img) img.remove();
-                if (slotName) slotName.remove();
-                
-                const questionMark = slot.querySelector('.question-mark');
-                if (questionMark) {
-                    questionMark.style.display = 'flex';
-                }
-            });
-            
-            if (bans && bans.length > 0) {
-                bans.forEach((brawler, index) => {
-                    if (index < banSlots.length) {
-                        if (brawler === 'hidden') {
-                            banSlots[index].textContent = '?';
-                            banSlots[index].classList.add('hidden-ban');
-                        } else {
-                            const imgUrl = `/static/brawler_images/${encodeURIComponent(brawler)}.png`;
-                            const img = document.createElement('img');
-                            img.src = imgUrl;
-                            img.alt = brawler;
-                            img.onerror = function() {
-                                this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">❓</text></svg>';
-                            };
-                            banSlots[index].appendChild(img);
-                            banSlots[index].style.borderStyle = 'solid';
-                            banSlots[index].classList.add('has-brawler');
-                        }
-                    }
-                });
-            }
-            
-            if (picks && picks.length > 0) {
-                picks.forEach((brawler, index) => {
-                    if (index < pickSlots.length) {
-                        const slot = pickSlots[index];
-                        const questionMark = slot.querySelector('.question-mark');
-                        
-                        if (questionMark) {
-                            questionMark.style.display = 'none';
-                        }
-                        
-                        const imgUrl = `/static/brawler_images/${encodeURIComponent(brawler)}.png`;
-                        const img = document.createElement('img');
-                        img.src = imgUrl;
-                        img.alt = brawler;
-                        img.onerror = function() {
-                            this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">❓</text></svg>';
-                        };
-                        
-                        const slotName = document.createElement('div');
-                        slotName.className = 'slot-name';
-                        slotName.textContent = brawler;
-                        
-                        slot.appendChild(img);
-                        slot.appendChild(slotName);
-                    }
-                });
-            }
         }
         
         function updateCenterMapDisplay() {
