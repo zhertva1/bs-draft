@@ -85,8 +85,9 @@ def get_or_create_state():
             'draft_started': False,
             'blue_team_name': 'СИНЯЯ КОМАНДА',
             'red_team_name': 'КРАСНАЯ КОМАНДА',
-            'picking_team': None,  # Команда, которая начинает пики
-            'next_pick_indicator': 0  # Индекс следующего пика для отображения "NEXT"
+            'picking_team': None,
+            'next_pick_indicator': 0,
+            'team_names_locked': False  # Новый флаг для блокировки обновления названий
         }
     
     return 'main', draft_states['main']
@@ -108,6 +109,7 @@ def check_auto_reset(state):
             state['draft_started'] = False
             state['picking_team'] = None
             state['next_pick_indicator'] = 0
+            state['team_names_locked'] = False  # Разблокируем при сбросе
             return True
     return False
 
@@ -180,7 +182,7 @@ def check_timer(state):
             state['phase'] = 'pick'
             state['current_turn'] = state['pick_order'][0]
             state['current_pick_index'] = 0
-            state['next_pick_indicator'] = 0  # Показываем "NEXT" на первом пике
+            state['next_pick_indicator'] = 0
             state['phase_start_time'] = time.time()
     
     elif state['phase'] == 'pick':
@@ -467,6 +469,7 @@ def reset_draft():
     state['draft_started'] = False
     state['picking_team'] = None
     state['next_pick_indicator'] = 0
+    state['team_names_locked'] = False
     state['last_action'] = time.time()
     
     return jsonify({
@@ -498,6 +501,7 @@ def new_draft():
     state['draft_started'] = False
     state['picking_team'] = None
     state['next_pick_indicator'] = 0
+    state['team_names_locked'] = False
     state['last_action'] = time.time()
     
     return jsonify({
@@ -522,6 +526,7 @@ def update_team_names():
     room_id, state = get_or_create_state()
     state['blue_team_name'] = blue_name
     state['red_team_name'] = red_name
+    state['team_names_locked'] = True  # Блокируем дальнейшие обновления извне
     state['last_action'] = time.time()
     
     return jsonify({
