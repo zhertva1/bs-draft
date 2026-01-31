@@ -1,4 +1,3 @@
-# Обновляем импорты и добавляем новые поля
 import os
 import random
 import time
@@ -55,19 +54,31 @@ def get_maps_by_mode():
 
 MAPS_BY_MODE = get_maps_by_mode()
 
-# Проверяем наличие гаджетов
-def check_gadgets_exist(brawler_name):
-    """Проверяет существование гаджетов для бравлера"""
-    gadgets_folder = os.path.join(app.static_folder, 'gadgets')
+# Проверяем наличие гаджетов для бравлеров
+def check_gadgets_for_brawlers():
+    gadgets_folder = os.path.join(app.static_folder, 'gadjets')
+    brawlers_with_gadgets = {}
     
-    if not os.path.exists(gadgets_folder):
-        return False
+    if os.path.exists(gadgets_folder):
+        print(f"✅ Папка гаджетов найдена: {gadgets_folder}")
+        for brawler in BRWLERS:
+            gadget_files = []
+            for i in [1, 2]:
+                filename = f"{brawler}_gadjet_0{i}.png"
+                filepath = os.path.join(gadgets_folder, filename)
+                if os.path.exists(filepath):
+                    gadget_files.append(i)
+            
+            if gadget_files:
+                brawlers_with_gadgets[brawler] = sorted(gadget_files)
+                print(f"  ✓ {brawler}: {len(gadget_files)} гаджетов")
+    else:
+        print(f"⚠️ Папка гаджетов не найдена: {gadgets_folder}")
     
-    # Ищем файлы гаджетов
-    gadget1 = os.path.join(gadgets_folder, f"{brawler_name}.gadget.01.png")
-    gadget2 = os.path.join(gadgets_folder, f"{brawler_name}.gadget.02.png")
-    
-    return os.path.exists(gadget1) and os.path.exists(gadget2)
+    return brawlers_with_gadgets
+
+BRAWLERS_WITH_GADGETS = check_gadgets_for_brawlers()
+print(f"✅ Бравлеров с гаджетами: {len(BRAWLERS_WITH_GADGETS)}")
 
 # Глобальное состояние драфта
 draft_states = {}
@@ -75,10 +86,10 @@ draft_states = {}
 def get_or_create_state():
     if 'main' not in draft_states:
         draft_states['main'] = {
-            'blue_bans': [],  # Бан - просто имя бравлера
-            'red_bans': [],   # Бан - просто имя бравлера
-            'blue_picks': [],  # Пик - объект с бравлером и гаджетом
-            'red_picks': [],   # Пик - объект с бравлером и гаджетом
+            'blue_bans': [],
+            'red_bans': [],
+            'blue_picks': [],
+            'red_picks': [],
             'all_selected': [],
             'phase': 'waiting',
             'phase_start_time': None,
@@ -101,7 +112,11 @@ def get_or_create_state():
             'blue_team_name': 'СИНЯЯ КОМАНДА',
             'red_team_name': 'КРАСНАЯ КОМАНДА',
             'picking_team': None,
-            'next_pick_indicator': 0
+            'next_pick_indicator': 0,
+            'team_names_locked': False,
+            # Новые поля для гаджетов
+            'blue_gadgets': {},  # Формат: {'brawler_name': 1 или 2}
+            'red_gadgets': {}   # Формат: {'brawler_name': 1 или 2}
         }
     
     return 'main', draft_states['main']
@@ -123,16 +138,16 @@ def check_auto_reset(state):
             state['draft_started'] = False
             state['picking_team'] = None
             state['next_pick_indicator'] = 0
+            state['team_names_locked'] = False
+            state['blue_gadgets'] = {}
+            state['red_gadgets'] = {}
             return True
     return False
 
 def get_available_brawlers(state):
     if state['phase'] == 'ban' and not state['bans_completed']:
         return BRWLERS.copy()
-    
-    # Для фазы пиков учитываем только имена бравлеров
-    all_selected_names = state['all_selected'].copy()
-    return [b for b in BRWLERS if b not in all_selected_names]
+    return [b for b in BRWLERS if b not in state['all_selected']]
 
 def auto_ban(state):
     available = get_available_brawlers(state)
@@ -157,24 +172,19 @@ def auto_pick(state, team):
     available = get_available_brawlers(state)
     if available:
         brawler = random.choice(available)
-        
-        # Определяем, есть ли гаджеты у этого бравлера
-        has_gadgets = check_gadgets_exist(brawler)
-        gadget = 1 if has_gadgets else 0  # 0 - нет гаджетов, 1 - первый гаджет, 2 - второй
-        
         if team == 'blue' and len(state['blue_picks']) < 3:
-            state['blue_picks'].append({
-                'brawler': brawler,
-                'gadget': gadget
-            })
+            state['blue_picks'].append(brawler)
+            # Устанавливаем гаджет по умолчанию (1) если есть гаджеты
+            if brawler in BRAWLERS_WITH_GADGETS:
+                state['blue_gadgets'][brawler] = 1
             if brawler not in state['all_selected']:
                 state['all_selected'].append(brawler)
             return True
         elif team == 'red' and len(state['red_picks']) < 3:
-            state['red_picks'].append({
-                'brawler': brawler,
-                'gadget': gadget
-            })
+            state['red_picks'].append(brawler)
+            # Устанавливаем гаджет по умолчанию (1) если есть гаджеты
+            if brawler in BRAWLERS_WITH_GADGETS:
+                state['red_gadgets'][brawler] = 1
             if brawler not in state['all_selected']:
                 state['all_selected'].append(brawler)
             return True
@@ -282,24 +292,19 @@ def update_state(state, team, brawler, action_type):
         if state['current_turn'] != team:
             return False, 'Не ваша очередь'
         
-        # Проверяем, выбран ли уже бравлер
         if brawler in state['all_selected']:
             return False, 'Бравлер уже выбран'
         
-        # Проверяем, есть ли гаджеты у этого бравлера
-        has_gadgets = check_gadgets_exist(brawler)
-        gadget = 1 if has_gadgets else 0
-        
         if team == 'blue' and len(state['blue_picks']) < 3:
-            state['blue_picks'].append({
-                'brawler': brawler,
-                'gadget': gadget
-            })
+            state['blue_picks'].append(brawler)
+            # Устанавливаем гаджет по умолчанию (1) если есть гаджеты
+            if brawler in BRAWLERS_WITH_GADGETS:
+                state['blue_gadgets'][brawler] = 1
         elif team == 'red' and len(state['red_picks']) < 3:
-            state['red_picks'].append({
-                'brawler': brawler,
-                'gadget': gadget
-            })
+            state['red_picks'].append(brawler)
+            # Устанавливаем гаджет по умолчанию (1) если есть гаджеты
+            if brawler in BRAWLERS_WITH_GADGETS:
+                state['red_gadgets'][brawler] = 1
         else:
             return False, 'Все пики уже сделаны'
         
@@ -320,10 +325,32 @@ def update_state(state, team, brawler, action_type):
     
     return True, 'Успешно'
 
+def toggle_gadget(state, team, brawler):
+    """Переключает гаджет для бравлера"""
+    if team == 'blue':
+        if brawler in state['blue_gadgets']:
+            current = state['blue_gadgets'][brawler]
+            # Переключаем между 1 и 2
+            new_gadget = 2 if current == 1 else 1
+            state['blue_gadgets'][brawler] = new_gadget
+            return True, f'Гаджет изменен на {new_gadget}'
+        else:
+            return False, 'У этого бравлера нет гаджетов'
+    elif team == 'red':
+        if brawler in state['red_gadgets']:
+            current = state['red_gadgets'][brawler]
+            # Переключаем между 1 и 2
+            new_gadget = 2 if current == 1 else 1
+            state['red_gadgets'][brawler] = new_gadget
+            return True, f'Гаджет изменен на {new_gadget}'
+        else:
+            return False, 'У этого бравлера нет гаджетов'
+    
+    return False, 'Неверная команда'
+
 def get_client_state(state, role):
     client_state = state.copy()
     
-    # Для банов скрываем от противника
     if not state['bans_completed']:
         if role == 'blue':
             client_state['red_bans'] = ['hidden'] * len(state['red_bans'])
@@ -333,7 +360,6 @@ def get_client_state(state, role):
             client_state['blue_bans'] = ['hidden'] * len(state['blue_bans'])
             client_state['red_bans'] = ['hidden'] * len(state['red_bans'])
     
-    # Таймеры и сброс
     if state['phase'] == 'finished' and state['finished_at']:
         elapsed = time.time() - state['finished_at']
         client_state['reset_in'] = max(0, 60 - int(elapsed))
@@ -346,8 +372,11 @@ def get_client_state(state, role):
     else:
         client_state['time_left'] = None
     
-    # Показываем монетку
+    # Определяем, какую монетку показывать
     client_state['show_coin'] = state['picking_team']
+    
+    # Добавляем информацию о гаджетах
+    client_state['brawlers_with_gadgets'] = BRAWLERS_WITH_GADGETS
     
     return client_state
 
@@ -430,6 +459,8 @@ def set_ready():
         state['draft_started'] = False
         state['picking_team'] = None
         state['next_pick_indicator'] = 0
+        state['blue_gadgets'] = {}
+        state['red_gadgets'] = {}
     
     if role == 'blue':
         state['blue_ready'] = True
@@ -482,63 +513,42 @@ def select_brawler():
     else:
         return jsonify({'success': False, 'error': message})
 
-# НОВЫЙ ЭНДПОИНТ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ГАДЖЕТА
 @app.route('/api/toggle_gadget', methods=['POST'])
-def toggle_gadget():
+def toggle_gadget_route():
     data = request.get_json()
     if not data:
         return jsonify({'success': False, 'error': 'Нет данных'}), 400
-    
+            
+    brawler = data.get('brawler', '').strip()
     role = data.get('role', '')
-    team = data.get('team', '')
-    pick_index = data.get('pick_index', -1)
     
-    if not role or role not in ['blue', 'red', 'admin']:
-        return jsonify({'success': False, 'error': 'Неверная роль'}), 400
+    if not brawler or not role or role not in ['blue', 'red']:
+        return jsonify({'success': False, 'error': 'Неверные данные'}), 400
     
-    if not team or team not in ['blue', 'red']:
-        return jsonify({'success': False, 'error': 'Неверная команда'}), 400
-    
-    if pick_index < 0 or pick_index > 2:
-        return jsonify({'success': False, 'error': 'Неверный индекс пика'}), 400
+    if brawler not in BRWLERS:
+        return jsonify({'success': False, 'error': 'Бравлер не найден'}), 404
     
     room_id, state = get_or_create_state()
     
-    # Проверяем права: капитан команды или админ
-    if role != 'admin' and role != team:
-        return jsonify({'success': False, 'error': 'Недостаточно прав'}), 403
+    # Проверяем, что бравлер действительно пикнут этой командой
+    if role == 'blue':
+        if brawler not in state['blue_picks']:
+            return jsonify({'success': False, 'error': 'Этот бравлер не выбран вашей командой'}), 400
+    elif role == 'red':
+        if brawler not in state['red_picks']:
+            return jsonify({'success': False, 'error': 'Этот бравлер не выбран вашей командой'}), 400
     
-    # Проверяем, что драфт завершен или в процессе
-    if state['phase'] not in ['pick', 'finished']:
-        return jsonify({'success': False, 'error': 'Гаджеты можно менять только во время пиков или после драфта'})
+    success, message = toggle_gadget(state, role, brawler)
     
-    # Находим пик
-    picks = state['blue_picks'] if team == 'blue' else state['red_picks']
-    
-    if pick_index >= len(picks):
-        return jsonify({'success': False, 'error': 'Пик не найден'}), 404
-    
-    pick = picks[pick_index]
-    brawler = pick['brawler']
-    
-    # Проверяем, есть ли гаджеты у этого бравлера
-    has_gadgets = check_gadgets_exist(brawler)
-    
-    if not has_gadgets:
-        return jsonify({'success': False, 'error': 'У этого бравлера нет гаджетов'}), 400
-    
-    # Переключаем гаджет
-    current_gadget = pick.get('gadget', 1)
-    new_gadget = 2 if current_gadget == 1 else 1
-    
-    pick['gadget'] = new_gadget
-    state['last_action'] = time.time()
-    
-    return jsonify({
-        'success': True,
-        'message': f'Гаджет изменен на {new_gadget}',
-        'state': get_client_state(state, role)
-    })
+    if success:
+        state['last_action'] = time.time()
+        return jsonify({
+            'success': True,
+            'message': message,
+            'state': get_client_state(state, role)
+        })
+    else:
+        return jsonify({'success': False, 'error': message})
 
 @app.route('/api/reset', methods=['POST'])
 @admin_required
@@ -567,6 +577,9 @@ def reset_draft():
     state['draft_started'] = False
     state['picking_team'] = None
     state['next_pick_indicator'] = 0
+    state['team_names_locked'] = False
+    state['blue_gadgets'] = {}
+    state['red_gadgets'] = {}
     state['last_action'] = time.time()
     
     return jsonify({
@@ -598,6 +611,9 @@ def new_draft():
     state['draft_started'] = False
     state['picking_team'] = None
     state['next_pick_indicator'] = 0
+    state['team_names_locked'] = False
+    state['blue_gadgets'] = {}
+    state['red_gadgets'] = {}
     state['last_action'] = time.time()
     
     return jsonify({
@@ -622,6 +638,7 @@ def update_team_names():
     room_id, state = get_or_create_state()
     state['blue_team_name'] = blue_name
     state['red_team_name'] = red_name
+    state['team_names_locked'] = True
     state['last_action'] = time.time()
     
     return jsonify({
@@ -684,6 +701,7 @@ def test_page():
     return jsonify({
         'status': 'online',
         'brawlers': len(BRWLERS),
+        'brawlers_with_gadgets': len(BRAWLERS_WITH_GADGETS),
         'maps': {mode: len(maps) for mode, maps in MAPS_BY_MODE.items()},
         'admin_url': f'/admin/{ADMIN_TOKEN}'
     })
@@ -704,6 +722,8 @@ if __name__ == '__main__':
     print("\n" + "="*50)
     print("🎮 BRAWL STARS DRAFT SYSTEM")
     print("="*50)
+    print(f"✅ Бравлеров загружено: {len(BRWLERS)}")
+    print(f"✅ Бравлеров с гаджетами: {len(BRAWLERS_WITH_GADGETS)}")
     print(f"✅ Админ: http://localhost:{port}/admin/{ADMIN_TOKEN}")
     print(f"✅ Синяя команда: http://localhost:{port}/blue")
     print(f"✅ Красная команда: http://localhost:{port}/red")
